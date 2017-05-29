@@ -137,7 +137,7 @@ public class Model {
         //copy the expression
         ReplicationExpression helper = (ReplicationExpression) exp.copy(parallel);
         //create new names for all restrictions and inputs
-        NameMapper.getInstance().traverse(helper, new MapTable(), true);
+        NameMapper.getInstance().traverse(helper, new MapTable(exp.getRoot()), true);
         //mark it as helper branch
         helper.setCopyType(false);
         //connect to parent
