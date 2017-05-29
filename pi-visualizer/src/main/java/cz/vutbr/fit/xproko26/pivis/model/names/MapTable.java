@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package cz.vutbr.fit.xproko26.pivis.model.names;
+import cz.vutbr.fit.xproko26.pivis.model.expressions.Expression;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,12 @@ import java.util.stream.Collectors;
  * @author Dagmar Prokopova
  */
 public class MapTable extends HashMap<Integer, NameRef> {
+    
+    Expression root;
+    
+    public MapTable(Expression r) {
+        root = r;
+    }
     
     /**
      * Adds name reference pair containing the old name reference as well as
@@ -55,12 +62,25 @@ public class MapTable extends HashMap<Integer, NameRef> {
      * @param ref name reference designated for remapping
      */
     public void remap(NameRef ref) {
-        NameRef newref = get(ref.getRef());
+        
+        NameRef newref;
+        
+        if (ref.isDefProcess()) {
+            newref = root.getNameReference(ref.getNameValue());            
+        }
+        else {
+            newref = get(ref.getRef());
+        }
+
         if (newref != null) {
             ref.setRef(newref.getRef());
             if (newref.isPrivate()) {
                 ref.setPrivate();
             }
+            if (newref.isProcess()) {
+                ref.setProcess();
+            }
+            ref.setDefProcess(newref.isDefProcess());            
         }
     }
     

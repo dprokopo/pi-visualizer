@@ -34,6 +34,7 @@ import cz.vutbr.fit.xproko26.pivis.model.expressions.Expression;
 import cz.vutbr.fit.xproko26.pivis.model.redmanager.Reduction;
 import cz.vutbr.fit.xproko26.pivis.model.ProcessList;
 import cz.vutbr.fit.xproko26.pivis.formater.TextFormater;
+import cz.vutbr.fit.xproko26.pivis.model.names.NRList;
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -714,9 +715,9 @@ public class AppGUI {
             }
             
             @Override
-            public boolean isProcDefined(String id, int argscount) {
+            public boolean isProcDefined(String id, NRList args) {
                 if (listener != null) {
-                    return listener.isProcDefined(id, argscount);
+                    return listener.isProcDefined(id, args);
                 }
                 return false;
             }

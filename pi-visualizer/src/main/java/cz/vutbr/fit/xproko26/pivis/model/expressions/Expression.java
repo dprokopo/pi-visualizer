@@ -17,7 +17,6 @@ package cz.vutbr.fit.xproko26.pivis.model.expressions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 import cz.vutbr.fit.xproko26.pivis.gui.graph.NodeValue;
@@ -94,6 +93,17 @@ public abstract class Expression implements Serializable {
         return stack;
     }
     
+    /**
+     * Returns uppermost expression.
+     * @return root expression
+     */
+    public Expression getRoot() {
+        Expression prev = this.parent;
+        while (prev != null) {
+            prev = prev.getParent();
+        }
+        return this;
+    }    
     
     /**
      * Returns list of all ancestors with root placed at the end of the list.

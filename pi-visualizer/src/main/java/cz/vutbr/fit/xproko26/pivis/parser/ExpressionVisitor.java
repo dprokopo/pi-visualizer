@@ -63,10 +63,10 @@ public class ExpressionVisitor extends PiExprBaseVisitor<Expression> {
         AbstractionExpression ex = new AbstractionExpression(parent);
         
         //process parameters
-        if (ctx.nlist() == null) {
+        if (ctx.varlist() == null) {
             ex.setParams(new NRList());            
         } else {
-            ex.createNames(ctx.nlist().accept(new NVListVisitor()));
+            ex.createNames(ctx.varlist().accept(new NVVarListVisitor()));
         }
         //visit following context and set the created expression as successor
         ex.setSuccExp(ctx.sum().accept(new ExpressionVisitor(ex)));
@@ -88,15 +88,17 @@ public class ExpressionVisitor extends PiExprBaseVisitor<Expression> {
         
         //create concretize expression and set its parent
         ConcretizeExpression ex = new ConcretizeExpression(parent);
-        
-        //process id
-        ex.setID(ctx.ID().getText());
+                        
+        //process identifier
+        NameValue nv = new NameValue(ctx.ID().getText());
+        nv.setProcess();
+        ex.setIDRef(parent.getNameReference(nv));               
         
         //process parameters
-        if (ctx.nlist() == null) {
+        if (ctx.varlist() == null) {
             ex.setArgs(new NRList());
         } else {
-            ex.setArgs(ctx.nlist().accept(new NRListVisitor(ex)));
+            ex.setArgs(ctx.varlist().accept(new NRVarListVisitor(ex)));
         }
         
         return ex;
@@ -152,10 +154,10 @@ public class ExpressionVisitor extends PiExprBaseVisitor<Expression> {
         }
         
         //process parameters
-        if (ctx.nlist() == null) {
+        if (ctx.varlist() == null) {
             ex.setParams(new NRList());            
         } else {
-            ex.createNames(ctx.nlist().accept(new NVListVisitor()));
+            ex.createNames(ctx.varlist().accept(new NVVarListVisitor()));
         }
         return ex;
         
@@ -175,10 +177,10 @@ public class ExpressionVisitor extends PiExprBaseVisitor<Expression> {
         }
         
         //process parameters
-        if (ctx.nlist() == null) {
+        if (ctx.varlist() == null) {
             ex.setParams(new NRList());            
         } else {
-            ex.setParams(ctx.nlist().accept(new NRListVisitor(ex)));
+            ex.setParams(ctx.varlist().accept(new NRVarListVisitor(ex)));
         }
         return ex;
     }

@@ -145,6 +145,10 @@ public class NameMapper extends ExpressionVisitor<MapTable> {
 
     @Override
     public MapTable visit(ConcretizeExpression node, MapTable mt) {
+
+        //remap process identifier
+        mt.remap(node.getIDRef());
+        
         //remap arguments if in map table
         mt.remap(node.getArgs());
         

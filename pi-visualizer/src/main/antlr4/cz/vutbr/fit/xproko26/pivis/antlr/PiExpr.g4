@@ -23,8 +23,8 @@ cmd     :   'agent' ID def      # Agent
         ;
 
 def     :   '=' sum
-        |   '(' nlist ')' '=' sum
-        |   '=' '(' '\\' nlist ')' sum
+        |   '(' varlist ')' '=' sum
+        |   '=' '(' '\\' varlist ')' sum
         ;
 
 sum     :   par                         # Continuesum
@@ -36,8 +36,8 @@ par     :   proc                        # Continuepar
         ;
 
 proc    :   NIL                         # Nil
-        |   ID '<' nlist '>'            # Concretization
-        |   ID '(' nlist ')'            # Concretization
+        |   ID '<' varlist '>'          # Concretization
+        |   ID '(' varlist ')'          # Concretization
         |   ID                          # Concretization                
         |   pi proc                     # Prefix
         |   '[' NAME '=' NAME ']' proc  # Match
@@ -48,18 +48,23 @@ proc    :   NIL                         # Nil
 
 pi      :   TAU '.'                        # Tau
 
-        |   NAME '.' '(' '\\' nlist ')'    # Input
-        |   NAME '(' nlist ')' '.'         # Input
-        |   NAME '.'                       # Input
+        |   NAME '.' '(' '\\' varlist ')'   # Input
+        |   NAME '(' varlist ')' '.'        # Input
+        |   NAME '.'                        # Input
         
-        |   '\'' NAME '.' '[' nlist ']'    # Output
-        |   '\'' NAME  '<' nlist '>' '.'   # Output
-        |   '\'' NAME '.'                  # Output
-        
+        |   '\'' NAME '.' '[' varlist ']'  # Output
+        |   '\'' NAME  '<' varlist '>' '.' # Output
+        |   '\'' NAME '.'                  # Output        
         
         ;
 
-nlist   :  NAME (',' NAME)*;
+nlist   :   NAME (',' NAME)*;
+
+varlist :   varname (',' varname)*;
+
+varname :   NAME
+        |   ID
+        ;
 
 TAU:    't';
 NIL:    '0';

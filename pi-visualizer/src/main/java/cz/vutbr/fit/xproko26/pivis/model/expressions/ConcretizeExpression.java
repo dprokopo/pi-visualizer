@@ -16,6 +16,7 @@
 package cz.vutbr.fit.xproko26.pivis.model.expressions;
 
 import cz.vutbr.fit.xproko26.pivis.model.names.NRList;
+import cz.vutbr.fit.xproko26.pivis.model.names.NameRef;
 
 /**
  * Class representing pi-calculus concretion of process definition.
@@ -24,9 +25,9 @@ import cz.vutbr.fit.xproko26.pivis.model.names.NRList;
 public class ConcretizeExpression extends SimpleExpression {
     
     private static final long serialVersionUID = 1L;
-    
-    //process identifier
-    private String id;
+
+    //name reference to process identifier
+    private NameRef id;
     
     //list of process arguments
     private NRList args;
@@ -45,19 +46,19 @@ public class ConcretizeExpression extends SimpleExpression {
     }         
     
     /**
-     * Returns process identifier.
-     * @return process identifier
+     * Returns reference to process name. Null when not name but process ID.
+     * @return name reference
      */
-    public String getID() {
+    public NameRef getIDRef() {
         return id;
     }
     
     /**
-     * Sets process identifier.
-     * @param i process identifier
+     * Sets name reference of process name.
+     * @param ref name reference
      */
-    public void setID(String i) {
-        id = i;
+    public void setIDRef(NameRef ref) {
+        id = ref;
     }
     
     /**
@@ -100,7 +101,7 @@ public class ConcretizeExpression extends SimpleExpression {
     @Override
     public String toString() {
         if (getSuccExp() == null) {
-            String ret = id;
+            String ret = id.toString();
             if (args != null && args.size() > 0) {
                 ret += "<";
                 ret += args.toString();
@@ -119,7 +120,7 @@ public class ConcretizeExpression extends SimpleExpression {
     @Override
     public String toStringDebug() {
         if (getSuccExp() == null) {
-            String ret = id;
+            String ret = id.toString();
             if (args != null && args.size() > 0) {
                 ret += "<";
                 ret += args.toStringDebug();

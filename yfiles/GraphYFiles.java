@@ -138,6 +138,14 @@ public class GraphYFiles implements GraphLib {
         privnameNS.setPaint(Colors.DARK_GRAY);
         privnameNS.setPen(Pen.getTransparent());
         nodestyles.put("privname", privnameNS);
+		
+		ShapeNodeStyle procnameNS = new ShapeNodeStyle();
+        procnameNS.setShape(ShapeNodeShape.RECTANGLE);
+        procnameNS.setPaint(Colors.WHITE);
+		pen = new Pen(Color.BLACK);
+        pen.setThickness(1);
+        procnameNS.setPen(pen);
+        nodestyles.put("procname", procnameNS);
         
         PanelNodeStyle groupNS = new PanelNodeStyle();
         groupNS.setColor(Colors.WHITE);
@@ -165,6 +173,10 @@ public class GraphYFiles implements GraphLib {
         PanelNodeStyle nogroupNS = new PanelNodeStyle();
         nogroupNS.setColor(Colors.WHITE);
         nodestyles.put("nogroup", nogroupNS);
+		
+		PanelNodeStyle procNS = new PanelNodeStyle();
+        procNS.setColor(new Color(238,238,238));
+        nodestyles.put("proc", procNS);
         
         ShapeNodeStyle selnogroupNS = new ShapeNodeStyle();
         selnogroupNS.setPaint(Color.WHITE);
@@ -172,6 +184,13 @@ public class GraphYFiles implements GraphLib {
         pen.setThickness(2);
         selnogroupNS.setPen(pen);
         nodestyles.put("selnogroup", selnogroupNS);
+		
+		ShapeNodeStyle selprocNS = new ShapeNodeStyle();
+        selprocNS.setPaint(new Color(238,238,238));
+        pen = new Pen(Color.BLUE);
+        pen.setThickness(2);
+        selprocNS.setPen(pen);
+        nodestyles.put("selproc", selprocNS);
         
         
         PolylineEdgeStyle paramES = new PolylineEdgeStyle();
@@ -400,6 +419,11 @@ public class GraphYFiles implements GraphLib {
                 label = origraph.addLabel(node, value.getLabel(), InteriorLabelModel.CENTER, labelstyles.get("privname"));                
                 origraph.setNodeLayout(node, new RectD(0, 0, label.getLayout().getWidth()+2*10, 30));
                 break;
+			case V_PROCNAME:                
+                node = origraph.createNode((INode)parent, new RectD(0, 0, 30, 30), nodestyles.get("procname"), value);
+                label = origraph.addLabel(node, value.getLabel(), InteriorLabelModel.CENTER, labelstyles.get("name"));                
+                origraph.setNodeLayout(node, new RectD(0, 0, label.getLayout().getWidth()+2*10, 30));
+                break;
             case V_LGROUP:
                 node = origraph.createGroupNode((INode)parent, new RectD(0, 0, 30, 30), nodestyles.get("folder"), value);
                 label = origraph.addLabel(node, value.getLabel(), InteriorLabelModel.CENTER, labelstyles.get("group"));
@@ -421,6 +445,11 @@ public class GraphYFiles implements GraphLib {
                 
             case V_NOGROUP:
                 node = origraph.createGroupNode((INode)parent, new RectD(0, 0, 30, 30), nodestyles.get("nogroup"), value);
+                label = origraph.addLabel(node, value.getLabel(), InteriorLabelModel.CENTER, labelstyles.get("group"));
+                origraph.setNodeLayout(node, new RectD(0, 0, label.getLayout().getWidth()+2*10, 30));
+                break;
+			case V_PROC:
+				node = origraph.createGroupNode((INode)parent, new RectD(0, 0, 30, 30), nodestyles.get("proc"), value);
                 label = origraph.addLabel(node, value.getLabel(), InteriorLabelModel.CENTER, labelstyles.get("group"));
                 origraph.setNodeLayout(node, new RectD(0, 0, label.getLayout().getWidth()+2*10, 30));
                 break;
@@ -578,6 +607,7 @@ public class GraphYFiles implements GraphLib {
             case V_NODE:
             case V_NAME:
             case V_PRIVNAME:
+			case V_PROCNAME:
                 ShapeNodeStyle style = ((ShapeNodeStyle) node.getStyle()).clone();
                 Pen p = new Pen(Color.BLUE);
                 p.setThickness(2);
@@ -609,6 +639,9 @@ public class GraphYFiles implements GraphLib {
             case V_NOGROUP:
                 origraph.setStyle(node, nodestyles.get("selnogroup"));
                 break;
+			case V_PROC:
+				origraph.setStyle(node, nodestyles.get("selproc"));
+                break;
         }
         
 
@@ -629,6 +662,7 @@ public class GraphYFiles implements GraphLib {
                 break;
             case V_NAME:
             case V_PRIVNAME:
+			case V_PROCNAME:
                 ShapeNodeStyle style2 = ((ShapeNodeStyle) node.getStyle()).clone();
                 style2.setPen(Pen.getTransparent());
                 origraph.setStyle(node, style2);
@@ -645,6 +679,9 @@ public class GraphYFiles implements GraphLib {
                 break;
             case V_NOGROUP:
                 origraph.setStyle(node, nodestyles.get("nogroup"));
+                break;
+			case V_PROC:
+                origraph.setStyle(node, nodestyles.get("proc"));
                 break;
         }
         

@@ -277,15 +277,17 @@ public class Visualizer extends ExpressionVisitor<NodeValue> {
     @Override
     public NodeValue visit(ConcretizeExpression node, NodeValue parent) {
         //extract visual object from the expression or create new
-        NodeValue nv1 = (node.getVisual() != null) ? node.getVisual() : new NodeValue(node.getID(), NodeValue.Type.V_NOGROUP);
+        NodeValue nv1 = (node.getVisual() != null) ? node.getVisual() : new NodeValue(node.getIDRef().toString(), NodeValue.Type.V_PROC);
+        nv1.setLabel(node.getIDRef().getNameValue().getLabel()); //update label
+        
         if (node.isReduced()) {
             //enhance label of the process identifier if reduced flag is on
-            nv1.setLabel("*" + node.getID());
+            nv1.setLabel("*" + node.getIDRef().toString());
         }
-                
-        if (listener != null) {
+
+        if (node.getIDRef().isDefProcess() && (listener != null)) {
             //check if process is defined and set visual node type accordingly
-            if (listener.isProcDefined(node.getID(), node.getArgs().size())) {
+            if (listener.isProcDefined(node.getIDRef().toString(), node.getArgs())) {
                 nv1.setType(hierarchic ? NodeValue.Type.V_HGROUP : NodeValue.Type.V_LGROUP);
             } else {
                 if (node.getSuccExp() == null) {
@@ -294,7 +296,7 @@ public class Visualizer extends ExpressionVisitor<NodeValue> {
             }
         }
         createNode(node, parent, nv1);
-        
+            
         //connect arguments
         for (NameRef nref : node.getArgs()) {
             NodeValue name = createName(parent, nref);
@@ -355,10 +357,23 @@ public class Visualizer extends ExpressionVisitor<NodeValue> {
      */
     private NodeValue createName(NodeValue parent, NameRef ref) {
         
+        NodeValue par = parent;
+        
         //extract visual object from the name value or create new
         NodeValue nameval = ref.getNameValue().getVisual();
         if (nameval == null) {
-            nameval = new NodeValue(ref.getNameValue().getLabel(), ref.isPrivate() ? NodeValue.Type.V_PRIVNAME : NodeValue.Type.V_NAME);
+            NodeValue.Type type = NodeValue.Type.V_NAME;
+            if (ref.isPrivate()) {
+                type = NodeValue.Type.V_PRIVNAME;
+            }
+            else if (ref.isDefProcess()) {
+                type = NodeValue.Type.V_PROCNAME;
+            }
+            nameval = new NodeValue(ref.getNameValue().getLabel(), type);
+        }
+
+        if (ref.isDefProcess()) {
+            par = null;
         }
         
         if (listener != null && listener.isVisualized(nameval)) {
@@ -369,7 +384,7 @@ public class Visualizer extends ExpressionVisitor<NodeValue> {
             //save the visual object and inform listener that new node should be created
             ref.getNameValue().setVisual(nameval);
             if (listener != null) {
-                listener.createdNode(parent, nameval, ref.getNameValue());
+                listener.createdNode(par, nameval, ref.getNameValue());
             }            
         }
         return nameval;

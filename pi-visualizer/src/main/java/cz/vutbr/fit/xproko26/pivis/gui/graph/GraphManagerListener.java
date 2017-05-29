@@ -16,6 +16,7 @@
 package cz.vutbr.fit.xproko26.pivis.gui.graph;
 
 import cz.vutbr.fit.xproko26.pivis.model.expressions.Expression;
+import cz.vutbr.fit.xproko26.pivis.model.names.NRList;
 
 /**
  * GraphManagerListener contains methods mostly for reporting user interactions
@@ -82,10 +83,10 @@ public interface GraphManagerListener {
      * Returns true if specified process with specified number of arguments was
      * defined
      * @param id process identifier
-     * @param argscout number of arguments
+     * @param args arguments
      * @return true if process was defined
      */
-    public boolean isProcDefined(String id, int argscout);
+    public boolean isProcDefined(String id, NRList args);
     
     /**
      * Returns true if the expression is reducible and thus it make sense

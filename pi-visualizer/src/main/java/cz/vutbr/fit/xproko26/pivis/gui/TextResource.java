@@ -88,9 +88,9 @@ public class TextResource extends ResourceBundle {
                     + "<h1>Process specification</h1>"
                     + "<p>Any process can be defined via the console as </p>"
                     + "<br>"    
-                    + "<p>&nbsp <b>agent</b> <FONT COLOR=RED>Id</FONT>(<FONT COLOR=BLUE>free names</FONT>) = <FONT COLOR=GREEN>expression</FONT></p>"
+                    + "<p>&nbsp <b>agent</b> <FONT COLOR=RED>Id</FONT>(<FONT COLOR=PURPLE>free variables</FONT>) = <FONT COLOR=GREEN>expression</FONT></p>"
                     + "<br>"
-                    + "<p>Every process <FONT COLOR=RED>identifier</FONT> starts with an uppercase letter, while every <FONT COLOR=BLUE>name</FONT> starts with a lowercase letter. Multiple names are separated by comma. The following grammar describes the syntax of an <FONT COLOR=GREEN>expression</FONT>:</p>"
+                    + "<p>Every process <FONT COLOR=RED>identifier</FONT> starts with an uppercase letter, while every <FONT COLOR=BLUE>name</FONT> starts with a lowercase letter. A <FONT COLOR=PURPLE>variable</FONT> can hold either a name or a process identifier. Multiple variables or names are separated by comma. The following grammar describes the syntax of an <FONT COLOR=GREEN>expression</FONT>:</p>"
                     + "<br>"
                     + "<table>"
                         
@@ -100,7 +100,7 @@ public class TextResource extends ResourceBundle {
                     + "</tr>"
                         
                     + "<tr>"
-                    + "<td>&nbsp <FONT COLOR=RED>Id</FONT> &lt<FONT COLOR=BLUE>names</FONT>&gt</td>"
+                    + "<td>&nbsp <FONT COLOR=RED>Id</FONT> &lt<FONT COLOR=PURPLE>variables</FONT>&gt</td>"
                     + "<td>&nbsp Process concretization</td>"
                     + "</tr>"
                         
@@ -110,12 +110,12 @@ public class TextResource extends ResourceBundle {
                     + "</tr>"
                         
                     + "<tr>"
-                    + "<td>&nbsp <FONT COLOR=BLUE>name</FONT> (<FONT COLOR=BLUE>names</FONT>).<FONT COLOR=GREEN>expression</FONT></td>"
+                    + "<td>&nbsp <FONT COLOR=BLUE>name</FONT> (<FONT COLOR=PURPLE>variables</FONT>).<FONT COLOR=GREEN>expression</FONT></td>"
                     + "<td>&nbsp Input prefix</td>"
                     + "</tr>"
                         
                     + "<tr>"
-                    + "<td>&nbsp '<FONT COLOR=BLUE>name</FONT> &lt<FONT COLOR=BLUE>names</FONT>&gt<FONT>.</FONT><FONT COLOR=GREEN>expression</FONT></td>"
+                    + "<td>&nbsp '<FONT COLOR=BLUE>name</FONT> &lt<FONT COLOR=PURPLE>variables</FONT>&gt<FONT>.</FONT><FONT COLOR=GREEN>expression</FONT></td>"
                     + "<td>&nbsp Output prefix</td>"
                     + "</tr>"
                         
@@ -234,7 +234,7 @@ public class TextResource extends ResourceBundle {
             case "about-html":
                 return "<html>"
                     + "<h1>Pi-Visualizer</h1>"
-                    + "<p>&nbsp <i>version 1.0</i></p>"
+                    + "<p>&nbsp <i>version 1.1</i></p>"
                     + "<br>"
                     + "<p>This software was developed as Master thesis project at Brno University of Technology, Czech Republic by Dagmar Prokopova (xproko26@stud.fit.vutbr.cz).</p>"
                     + "<br>"    

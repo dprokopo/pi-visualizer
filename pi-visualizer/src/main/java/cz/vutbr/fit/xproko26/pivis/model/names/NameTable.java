@@ -41,6 +41,10 @@ public class NameTable extends ArrayList<NameValue>{
         if (nv.isPrivate()) {
             nr.setPrivate();
         }
+        if (nv.isProcess()) {
+            nr.setProcess();
+        }
+        nr.setDefProcess(nv.isDefProcess());
         return nr;
     }
     
@@ -57,7 +61,11 @@ public class NameTable extends ArrayList<NameValue>{
         NameRef nr = new NameRef(size()-1);
         if (ref.isPrivate()) {
             nr.setPrivate();
-        }
+        }        
+        if (ref.isProcess()) {
+            nr.setProcess();
+        }        
+        nr.setDefProcess(ref.isDefProcess());
         nr.setSource(ref.getSource());
         return nr;
     }

@@ -190,6 +190,7 @@ public class GraphJGraphX implements GraphLib {
         e.consume();
     }
 
+    @Override
     public JComponent getGraphComponent() {
         return gcomp;
     }
@@ -325,17 +326,24 @@ public class GraphJGraphX implements GraphLib {
                 break;
             case V_PRIVNAME:
                 node.setStyle("privname");              
-                graph.updateCellSize(node);
-                break;
+                graph.updateCellSize(node);               
+                break;                     
+            case V_PROCNAME:
+                node.setStyle("procname");              
+                graph.updateCellSize(node);               
+                break;  
             case V_LGROUP:
             case V_HGROUP:
                 node.setStyle("group");
                 graph.updateCellSize(node); 
-                node.getGeometry().setAlternateBounds(new mxRectangle(0, 0, node.getGeometry().getWidth(), node.getGeometry().getHeight()));                                               
-                                
+                node.getGeometry().setAlternateBounds(new mxRectangle(0, 0, node.getGeometry().getWidth(), node.getGeometry().getHeight()));                                                                               
                 break;
             case V_NOGROUP:
                 node.setStyle("nogroup");
+                graph.updateCellSize(node);
+                break;
+            case V_PROC:
+                node.setStyle("proc");
                 graph.updateCellSize(node);
                 break;
         }
@@ -478,6 +486,15 @@ public class GraphJGraphX implements GraphLib {
         style.put(mxConstants.STYLE_FONTCOLOR, "#FFFFFF");
         graph.getStylesheet().putCellStyle("privname", style);
         
+        //style vertices - process name
+        style = new HashMap<>();
+        style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
+        style.put(mxConstants.STYLE_FONTSTYLE, mxConstants.FONT_ITALIC);
+        style.put(mxConstants.STYLE_FONTSIZE, 17);
+	style.put(mxConstants.STYLE_FILLCOLOR, "#FFFFFF");
+        style.put(mxConstants.STYLE_FONTCOLOR, "#000000");
+        graph.getStylesheet().putCellStyle("procname", style);
+               
         //style vertices - group
         style = new HashMap<>();
         style.put(mxConstants.STYLE_FONTSTYLE, mxConstants.FONT_ITALIC);
@@ -499,6 +516,18 @@ public class GraphJGraphX implements GraphLib {
         style.put(mxConstants.STYLE_SHADOW, true);
         style.put(mxConstants.STYLE_FOLDABLE, false);
         graph.getStylesheet().putCellStyle("nogroup", style);
+        
+        //style vertices - proc
+        style = new HashMap<>();
+        style.put(mxConstants.STYLE_FONTSTYLE, mxConstants.FONT_ITALIC);
+        style.put(mxConstants.STYLE_FILLCOLOR, "#eeeeee"); 
+        style.put(mxConstants.STYLE_FONTSIZE, 18);
+        style.put(mxConstants.STYLE_SPACING_LEFT, 9);
+        style.put(mxConstants.STYLE_SPACING_RIGHT, 9);
+	style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_SWIMLANE);
+        style.put(mxConstants.STYLE_SHADOW, true);
+        style.put(mxConstants.STYLE_FOLDABLE, false);
+        graph.getStylesheet().putCellStyle("proc", style);
         
     }
 

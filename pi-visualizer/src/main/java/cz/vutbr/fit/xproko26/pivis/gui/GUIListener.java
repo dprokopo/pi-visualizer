@@ -16,6 +16,7 @@
 package cz.vutbr.fit.xproko26.pivis.gui;
 
 import cz.vutbr.fit.xproko26.pivis.model.expressions.Expression;
+import cz.vutbr.fit.xproko26.pivis.model.names.NRList;
 import cz.vutbr.fit.xproko26.pivis.model.redmanager.Reduction;
 
 /**
@@ -185,10 +186,10 @@ public interface GUIListener {
      * Returns true if specified process with speccified number of arguments
      * was already defined and thus is present in process list.
      * @param id process identifier
-     * @param argscount argument count
+     * @param args arguments
      * @return true if process definition exists
      */
-    public boolean isProcDefined(String id, int argscount);
+    public boolean isProcDefined(String id, NRList args);
     
 
 }

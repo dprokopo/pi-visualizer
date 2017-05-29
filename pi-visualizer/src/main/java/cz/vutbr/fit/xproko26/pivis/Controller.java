@@ -29,6 +29,7 @@ import cz.vutbr.fit.xproko26.pivis.parser.TextParser;
 import cz.vutbr.fit.xproko26.pivis.parser.TextParserListener;
 
 import cz.vutbr.fit.xproko26.pivis.filemanager.FileManager;
+import cz.vutbr.fit.xproko26.pivis.model.names.NRList;
 import java.io.File;
 import java.util.List;
 
@@ -342,9 +343,9 @@ public class Controller {
             }
 
             @Override
-            public boolean isProcDefined(String id, int argscount) {
+            public boolean isProcDefined(String id, NRList args) {
                 try {
-                    model.getProcDef(id, argscount);
+                    model.getProcDef(id, args);
                     return true;
                 } catch (Exception e) {
                     gui.writeConsole(e.getMessage());

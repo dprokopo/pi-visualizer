@@ -94,7 +94,7 @@ public class HelpFrame extends JFrame {
             HelpListModel model = (HelpListModel)list.getModel();
             content.setText((String) model.getHelpElementAt(list.getSelectedIndex()).getContent());
             revalidate();
-            contentPanel.setPreferredSize(new Dimension(600, (int) content.getSize().getHeight()+320));
+            contentPanel.setPreferredSize(new Dimension(600, (int) content.getSize().getHeight()+350));
             contentPanel.revalidate();
             revalidate();
         });

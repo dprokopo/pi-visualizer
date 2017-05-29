@@ -135,7 +135,23 @@ public class IOReduction extends Reduction {
         if (!isComplete()) {
             return false;
         }
-        return ((input.getChannel().equals(output.getChannel())) && (input.getParams().size() == output.getParams().size()));
+        if (!((input.getChannel().equals(output.getChannel())) && (input.getParams().size() == output.getParams().size())))
+            return false;
+        
+        for (int i=0; i < input.getParams().size(); i++) {
+            if (output.getParams().get(i).isProcess()) {
+                if (!input.getParams().get(i).isProcess()) {
+                    return false;
+                }
+            }
+            else {
+                if (input.getParams().get(i).isProcess()) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
     }
 
     /**

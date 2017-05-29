@@ -376,7 +376,7 @@ public class TextFormater extends ExpressionVisitor<List<TextBlob>> {
     public List<TextBlob> visit(ConcretizeExpression node, List<TextBlob> o) {
         List<TextBlob> ret = new ArrayList<>();        
         if ((node.getSuccExp() == null) || ((node.getVisual() != null) && (node.getVisual().isCollapsed()))) {
-            TextBlob idblob = new TextBlob(node.getID());
+            TextBlob idblob = new TextBlob(node.getIDRef().toString());
             idblob.setProcId(true);
             ret.add(idblob);
             

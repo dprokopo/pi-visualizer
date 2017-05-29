@@ -32,6 +32,7 @@ import cz.vutbr.fit.xproko26.pivis.model.expressions.ConcretizeExpression;
 import cz.vutbr.fit.xproko26.pivis.model.expressions.Expression;
 import cz.vutbr.fit.xproko26.pivis.model.expressions.ParallelReplicationExpression;
 import cz.vutbr.fit.xproko26.pivis.model.expressions.ReplicationExpression;
+import cz.vutbr.fit.xproko26.pivis.model.names.NRList;
 import cz.vutbr.fit.xproko26.pivis.visualizer.NodeValueModifier;
 import cz.vutbr.fit.xproko26.pivis.visualizer.VisualListener;
 import cz.vutbr.fit.xproko26.pivis.visualizer.Visualizer;
@@ -380,8 +381,10 @@ public class GraphManager {
                 //display all edges
                 for (EdgeValue edge : getEdges(child)) {
                     //do not visualize edges connecting to expanded groups
-                    if (getSource(edge).isCollapsed() && getTarget(edge).isCollapsed()) {
-                        setVisible(edge, true);
+                    if (getSource(edge).isCollapsed() && getTarget(edge).isCollapsed()) {                        
+                        //test if name needs to be visualized first
+                        showUsedName(getTarget(edge));                        
+                        setVisible(edge, true);                        
                     }
                 }
             }
@@ -407,7 +410,9 @@ public class GraphManager {
             }
             //hide all child edges
             getEdges(child).forEach((edge) -> {
-                setVisible(edge, false);
+                setVisible(edge, false);                
+                //shold hide name too?
+                hideUnusedName(getTarget(edge));                
             });
             
             //hide the node itself
@@ -999,7 +1004,7 @@ public class GraphManager {
             }
 
             @Override
-            public boolean isProcDefined(String id, int args) {
+            public boolean isProcDefined(String id, NRList args) {
                 if (listener != null) {
                     return listener.isProcDefined(id, args);
                 }

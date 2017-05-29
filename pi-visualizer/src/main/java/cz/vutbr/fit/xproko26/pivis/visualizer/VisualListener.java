@@ -17,6 +17,7 @@ package cz.vutbr.fit.xproko26.pivis.visualizer;
 
 import cz.vutbr.fit.xproko26.pivis.gui.graph.EdgeValue;
 import cz.vutbr.fit.xproko26.pivis.gui.graph.NodeValue;
+import cz.vutbr.fit.xproko26.pivis.model.names.NRList;
 
 /**
  * Interface containing methods invoked by Visualizer to inform graph manager
@@ -54,10 +55,10 @@ public interface VisualListener {
      * Returns true if the specified process with the specified number of arguments
      * was already defined.
      * @param id process identifier.
-     * @param args number of process arguments
+     * @param args process arguments
      * @return true if process is defined
      */
-    public boolean isProcDefined(String id, int args);
+    public boolean isProcDefined(String id, NRList args);
     
     /**
      * Returns true if there was a graphic object already created for specified 

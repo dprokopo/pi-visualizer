@@ -329,8 +329,8 @@ public class ReductionManager extends ExpressionVisitor<Object> {
         }        
         
         //remap names in input branch (behind input node)
-        MapTable maptable = new MapTable();
-        maptable.add(in.getParams(), out.getParams()); 
+        MapTable maptable = new MapTable(in.getRoot());
+        maptable.add(in.getParams(), out.getParams());
         NameMapper.getInstance().traverse(in.getSuccExp(), maptable, false);
 
         //remove nodes
@@ -373,7 +373,7 @@ public class ReductionManager extends ExpressionVisitor<Object> {
         //create repliaction copy as a backup
         ReplicationExpression backup = rexp.copy(par);
         //create new names for all restrictions and inputs
-        NameMapper.getInstance().traverse(backup, new MapTable(), true);
+        NameMapper.getInstance().traverse(backup, new MapTable(rexp.getRoot()), true);
         //remove replication node from the original
         rexp.remove();
 
@@ -587,16 +587,16 @@ public class ReductionManager extends ExpressionVisitor<Object> {
         ReductionContext newctx = ((ReductionContext)ctx).copy();
         if (node.getSuccExp() != null) {
             if (!node.isReduced()) {
-                newctx.update(node.getID(), node.getArgs());
+                newctx.update(node.getIDRef().toString(), node.getArgs());
             }
             return visit(node.getSuccExp(), newctx);
         }
         else {
-            if (((ReductionContext) ctx).notUsed(node.getID(), node.getArgs())) {
+            if (((ReductionContext) ctx).notUsed(node.getIDRef().toString(), node.getArgs())) {
                 if (listener != null) {
                     Expression inst = listener.getInstance(node);
                     if (inst != null) {
-                        newctx.update(node.getID(), node.getArgs());
+                        newctx.update(node.getIDRef().toString(), node.getArgs());
                         return visit(inst, newctx);
                     }
                 }

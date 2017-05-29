@@ -52,12 +52,17 @@ public class RootExpression extends SimpleExpression {
                 return n;
             }
         }
+        //check if defined process
+        if (val.isProcess()) {
+            val.setDefProcess(true);
+        }
         
         //else calls global name table to create record for such name
-        NameRef newref = Model.getInstance().getNameTable().createName(val);        
+        NameRef newref = Model.getInstance().getNameTable().createName(val);
         //save record into local name table
         nametable.add(newref);
         return newref;
+
     }    
     
     /**

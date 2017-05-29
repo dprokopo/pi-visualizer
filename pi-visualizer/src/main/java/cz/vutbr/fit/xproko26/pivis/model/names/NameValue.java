@@ -118,6 +118,10 @@ public class NameValue extends Name {
         if (isPrivate()) {
             copy.setPrivate();
         }
+        if (isProcess()) {
+            copy.setProcess();
+        }
+        copy.setDefProcess(isDefProcess());     
         return copy;
     }
 }

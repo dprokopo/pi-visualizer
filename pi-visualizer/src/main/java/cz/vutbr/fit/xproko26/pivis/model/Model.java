@@ -26,6 +26,7 @@ import cz.vutbr.fit.xproko26.pivis.model.expressions.ParallelReplicationExpressi
 import cz.vutbr.fit.xproko26.pivis.model.expressions.ReplicationExpression;
 import cz.vutbr.fit.xproko26.pivis.model.expressions.TauPrefixExpression;
 import cz.vutbr.fit.xproko26.pivis.model.names.MapTable;
+import cz.vutbr.fit.xproko26.pivis.model.names.NRList;
 import cz.vutbr.fit.xproko26.pivis.model.names.NameMapper;
 import cz.vutbr.fit.xproko26.pivis.model.names.NameTable;
 import cz.vutbr.fit.xproko26.pivis.model.redmanager.IOReduction;
@@ -153,12 +154,12 @@ public class Model {
     private AbstractionExpression instantiate(ConcretizeExpression cexp) throws Exception {
 
         //get process definition
-        AbstractionExpression procdef = getProcDef(cexp.getID(), cexp.getArgs().size());        
+        AbstractionExpression procdef = getProcDef(cexp.getIDRef().toString(), cexp.getArgs());        
         //create copy
         AbstractionExpression inst = procdef.copy(cexp);
 
         //substitute names, create unique name values for restrictions and input 
-        MapTable maptable = new MapTable();
+        MapTable maptable = new MapTable(cexp.getRoot());
         maptable.add(inst.getParams(), cexp.getArgs());
         NameMapper.getInstance().traverse(inst, maptable, true);
 
@@ -326,12 +327,12 @@ public class Model {
     /**
      * Returns abstraction expression of specified process.
      * @param id process identifier
-     * @param argcount count of the arguments
+     * @param args list of arguments
      * @return abstraction expression
      * @throws Exception in case that process is not defined or number of arguments
      * does not match.
      */
-    public AbstractionExpression getProcDef(String id, int argcount) throws Exception {        
+    public AbstractionExpression getProcDef(String id, NRList args) throws Exception {        
         AbstractionExpression expr = (AbstractionExpression) data.getProcess(id);
         
         //check if process is defined
@@ -340,8 +341,21 @@ public class Model {
         }
         
         //check if number of parameters and arguments match
-        if (expr.getParams().size() != argcount) {
-            throw new Exception("Warning: Invalid number of arguments. Proces '" + id + "' requires " + expr.getParams().size() + " arguments, " + argcount + " provided.");
+        if (expr.getParams().size() != args.size()) {
+            throw new Exception("Warning: Invalid number of arguments. Proces '" + id + "' requires " + expr.getParams().size() + " arguments, " + args.size() + " provided.");
+        }
+        
+        for (int i=0; i < expr.getParams().size(); i++) {
+            if (expr.getParams().get(i).isProcess()) {
+                if (!args.get(i).isProcess()) {
+                    throw new Exception("Warning: The " + (int)(i+1) + ". argument of process " + id + " needs to be a process name.");
+                }
+            }
+            else {
+                if (args.get(i).isProcess()) {
+                    throw new Exception("Warning: The " + (int)(i+1) + ". argument " + id + " cannot be a process name.");
+                }
+            }
         }
         
         return expr;

@@ -27,12 +27,20 @@ public abstract class Name implements Serializable {
     
     //flag indicating if the name is private
     private boolean priv;
+    
+    //flag indicating if the name is process
+    private boolean process;
+    
+    //flag indicating if the name is defined process
+    private boolean defproc;
   
     /**
-     * Constuctor which initializes private flag as false.
+     * Constuctor which initializes private flag and process flag as false.
      */
     public Name() {
         priv = false;
+        process = false;
+        defproc = false;
     }
     
     /**
@@ -48,6 +56,36 @@ public abstract class Name implements Serializable {
      */
     public void setPrivate() {
         priv = true;
+    }
+    
+    /**
+     * Returns true if the name is process.
+     * @return boolean process flag value
+     */
+    public boolean isProcess() {
+        return process;
+    }
+    
+    /**
+     * Sets process flag of the name to true.
+     */
+    public void setProcess() {
+        process = true;
+    }
+    
+    /**
+     * Returns true if the name is defined process.
+     * @return boolean defined process flag value
+     */
+    public boolean isDefProcess() {
+        return defproc;
+    }
+    
+    /**
+     * Sets defined process flag of the name.
+     */
+    public void setDefProcess(boolean b) {
+        defproc = b;
     }
     
     /**

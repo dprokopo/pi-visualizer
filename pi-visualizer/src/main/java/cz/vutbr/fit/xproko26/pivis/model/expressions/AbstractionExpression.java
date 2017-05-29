@@ -83,7 +83,13 @@ public class AbstractionExpression extends SimpleExpression {
         if (getParent() != null) {
             return getParent().getNameReference(val); 
         }
-
+        
+        //check if defined process
+        if (val.isProcess()) {
+            val.setDefProcess(true);
+            return Model.getInstance().getNameTable().createName(val);                   
+        }
+        
         return null;                           
     }
     

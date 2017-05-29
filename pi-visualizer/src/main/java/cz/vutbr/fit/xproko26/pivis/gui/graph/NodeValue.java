@@ -36,9 +36,11 @@ public class NodeValue extends CellValue {
         V_NODE,     //classic structural node representing pi-calculus operation
         V_NAME,     //node representing pi-calculus name
         V_PRIVNAME, //node representing pi-calculus restricted name
+        V_PROCNAME, //node representing process name
         V_LGROUP,   //node representing pi-calculus concretion for linear layout
         V_HGROUP,   //node representing pi-calculus concretion for hierarchical layout
-        V_NOGROUP   //node representing undefined pi-calculus process
+        V_NOGROUP,  //node representing undefined pi-calculus process
+        V_PROC      //node representing process abstraction
     }
     
     //node type
@@ -153,7 +155,7 @@ public class NodeValue extends CellValue {
      * @return true if node represens name
      */
     public boolean isName() {
-        return ((type == Type.V_NAME ) || (type == Type.V_PRIVNAME));
+        return ((type == Type.V_NAME ) || (type == Type.V_PRIVNAME) || (type == Type.V_PROCNAME));
     }
     
 }
