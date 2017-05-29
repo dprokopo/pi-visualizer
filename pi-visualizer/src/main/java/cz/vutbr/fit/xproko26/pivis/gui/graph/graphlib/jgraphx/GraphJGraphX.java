@@ -220,8 +220,7 @@ public class GraphJGraphX implements GraphLib {
     }
     
     private Object[] getGroupRoot(mxICell group) {
-
-        mxICell groupparent = group.getParent();
+                
         mxIGraphModel model = graph.getModel();
         for (int i = 0; i < group.getChildCount(); i++) {
             mxCell cell = (mxCell) model.getChildAt(group, i);
@@ -231,8 +230,14 @@ public class GraphJGraphX implements GraphLib {
                 for (Object edge : edges) {
                     mxCell source = (mxCell) getSource(edge);
                     mxCell target = (mxCell) getTarget(edge);
-                    if (source.getParent().getId().equals(groupparent.getId())) { // TODO test here
-                        return new Object[] { cell };
+                    
+                    //check if the source node was in one of the previous groups
+                    mxICell groupparent = group.getParent();
+                    while (groupparent != null) {
+                        if (source.getParent().getId().equals(groupparent.getId())) {
+                            return new Object[] { cell };                        
+                        }
+                        groupparent = groupparent.getParent();
                     }
                     if (target.getId().equals(cell.getId())) {
                         rootcandidate = false;
