@@ -140,7 +140,7 @@ public class ConcretizeExpression extends SimpleExpression {
     @Override
     public ConcretizeExpression copy(Expression par) {
         ConcretizeExpression copy = new ConcretizeExpression(par);
-        copy.id = id;
+        copy.id = id.copy();
         copy.args = args.copy();
         copy.setSuccExp(null);
         return copy;
