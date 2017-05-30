@@ -79,7 +79,7 @@ public class GraphManager {
         
         //create graphical library        
         glib = (GraphLib) new GraphJGraphX();
-		//glib = (GraphLib) new GraphYFiles();	/***YFILES***/
+        //glib = (GraphLib) new GraphYFiles();	/***YFILES***/
     }
     
     /**
@@ -381,6 +381,8 @@ public class GraphManager {
                 for (EdgeValue edge : getEdges(child)) {
                     //do not visualize edges connecting to expanded groups
                     if (getSource(edge).isCollapsed() && getTarget(edge).isCollapsed()) {
+                        //test if name needs to be visualized first
+                        showUsedName(getTarget(edge));
                         setVisible(edge, true);
                     }
                 }
@@ -391,6 +393,7 @@ public class GraphManager {
             } else {
                 setVisible(child, true);
             }
+            hideUnusedName(child);
         }
     }
         
@@ -408,6 +411,8 @@ public class GraphManager {
             //hide all child edges
             getEdges(child).forEach((edge) -> {
                 setVisible(edge, false);
+                //shold hide name too?
+                hideUnusedName(getTarget(edge));
             });
             
             //hide the node itself
