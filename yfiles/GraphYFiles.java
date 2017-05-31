@@ -785,12 +785,14 @@ public class GraphYFiles implements GraphLib {
                 (new GraphYFileExporter(gcomp)).export(os, this);
             }
         }); 
+		/*
         ret.add(new ExportAction("emf", "emf", true) {
             @Override
             public void export(FileOutputStream os)  throws Exception {
                 (new GraphYFileExporter(gcomp)).export(os, this);
             }
         });
+		*/
         ret.add(new ExportAction("eps") {
             @Override
             public void export(FileOutputStream os)  throws Exception {
