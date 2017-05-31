@@ -135,6 +135,12 @@ public abstract class CellValue implements Serializable {
         return (id == cv.getID());
     }
 
+    /**
+     * Custom deserialization.
+     * @param stream stream which should be deserialized
+     * @throws IOException
+     * @throws ClassNotFoundException 
+     */
     private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         this.id = idcounter++;
