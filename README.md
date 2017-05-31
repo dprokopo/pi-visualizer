@@ -10,4 +10,4 @@ The application is licensed under the Apache 2.0 license.
 	mvn package
 	
 ## Running the application:	
-	java -jar target/pi-visualizer-1.0-with-dependencies.jar
+	java -jar target/pi-visualizer-1.1-with-dependencies.jar
