@@ -15,6 +15,8 @@
  */
 package cz.vutbr.fit.xproko26.pivis.gui.graph;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 
 /**
@@ -36,7 +38,7 @@ public abstract class CellValue implements Serializable {
     private static int idcounter = 0;
     
     //unique identifier
-    private final int id;
+    private transient int id;
 
     //label of the graph node or edge
     private String label;
@@ -131,5 +133,10 @@ public abstract class CellValue implements Serializable {
      */
     public boolean equals(CellValue cv) {
         return (id == cv.getID());
+    }
+
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        this.id = idcounter++;
     }
 }
