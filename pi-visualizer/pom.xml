@@ -120,10 +120,10 @@
 			<version>3.7.2</version>
 		</dependency>
 		<dependency>
-			<groupId>com.kenai.nbpwr</groupId>
-			<artifactId>org-apache-batik-all</artifactId>
-			<version>1.7-201002241055</version>
-		</dependency>
+            <groupId>org.codeartisans.thirdparties.swing</groupId>
+            <artifactId>batik-all</artifactId>
+            <version>1.8pre-r1084380</version>
+        </dependency>
 		<dependency>
 			<groupId>org.w3c</groupId>
 			<artifactId>dom</artifactId>
