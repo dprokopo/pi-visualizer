@@ -552,7 +552,7 @@ public class GraphManager {
         expand(expandNodes);
         
         if (listener != null) {
-            listener.instanceVisualized();
+            listener.instanceVisualized(instexp);
         }
         
     }    
@@ -776,7 +776,10 @@ public class GraphManager {
      */
     private void setReductionSelected(NodeValue cv, boolean b) {
         cv.setReductionSelected(b);
-        glib.setReductionSelected(getGraphic(cv), b);
+        Object graphic = getGraphic(cv);
+        if (graphic != null) {
+            glib.setReductionSelected(graphic, b);
+        }
     }
     
     /**
@@ -787,8 +790,9 @@ public class GraphManager {
      */
     private void setSuggested(NodeValue cv, boolean b) {
         cv.setSuggested(b);
-        if (getGraphic(cv) != null) {
-            glib.setSuggested(getGraphic(cv), b);
+        Object graphic = getGraphic(cv);
+        if (graphic != null) {
+            glib.setSuggested(graphic, b);
         }
     }
     
@@ -799,8 +803,9 @@ public class GraphManager {
      */
     private void setSelected(CellValue cv, boolean b) {
         cv.setSelected(b);
-        if (getGraphic(cv) != null) {
-            glib.setSelected(getGraphic(cv), b);
+        Object graphic = getGraphic(cv);
+        if (graphic != null) {
+            glib.setSelected(graphic, b);
         }
     }
 

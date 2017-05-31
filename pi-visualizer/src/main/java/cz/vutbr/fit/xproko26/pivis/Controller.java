@@ -189,7 +189,7 @@ public class Controller {
                 //expand and visualize graph if needed
                 gui.prepareForRedSelection(model.getSelection());
                 //remove old highlighting and set current one
-                processSelection();
+                processSelection(model.getExpression());
                 //update expression line
                 gui.setExpressionLine(model.getExpression());
                 //set index in reduction table
@@ -369,14 +369,14 @@ public class Controller {
             }
 
             @Override
-            public void instanceVisualized() {
-                processSelection();
+            public void instanceVisualized(Expression exp) {
+                processSelection(exp);
             }
             
             @Override
             public void helperVisualized(Expression exp) {
                 model.changeHelperToCopy(exp);
-                processSelection();
+                processSelection(exp);
                 gui.setExpressionLine(model.getExpression());
             }
 
@@ -477,9 +477,10 @@ public class Controller {
     
     /**
      * Removes old selection and suggestions and visualizes current ones.
+     * @param exp expression which should be processed for selection
      */
-    private void processSelection() {        
-        gui.removeRedSelection(model.getExpression());
+    private void processSelection(Expression exp) {        
+        gui.removeRedSelection(exp);
         gui.visualizeRedSelection(model.getSelection());
         gui.visualizeSuggestions(model.getSuggestions());
     }

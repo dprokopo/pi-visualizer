@@ -163,12 +163,13 @@ public interface GUIListener {
     
     /**
      * Reports that the instance was visualized.
+     * @param exp visualized instance expression
      */
-    public void instanceVisualized();
+    public void instanceVisualized(Expression exp);
     
     /**
      * Reports that the replication helper was visualized.
-     * @param exp 
+     * @param exp visualized helper expression
      */
     public void helperVisualized(Expression exp);
     

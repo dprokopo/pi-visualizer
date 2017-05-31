@@ -60,8 +60,9 @@ public interface GraphManagerListener {
     
     /**
      * Reports the fact that instace was visualized.
+     * @param exp visualized instance expression
      */
-    public void instanceVisualized();
+    public void instanceVisualized(Expression exp);
     
     /**
      * Reports the fact that replication helper branch was visualized.

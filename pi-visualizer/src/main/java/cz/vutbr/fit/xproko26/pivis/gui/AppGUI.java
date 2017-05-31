@@ -678,9 +678,9 @@ public class AppGUI {
             }
             
             @Override
-            public void instanceVisualized() {
+            public void instanceVisualized(Expression exp) {
                 if (listener != null) {
-                    listener.instanceVisualized();
+                    listener.instanceVisualized(exp);
                 }                
             }
             
