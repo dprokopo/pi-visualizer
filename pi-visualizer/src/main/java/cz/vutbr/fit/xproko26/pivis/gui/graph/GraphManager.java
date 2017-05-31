@@ -80,7 +80,7 @@ public class GraphManager {
         
         //create graphical library        
         glib = (GraphLib) new GraphJGraphX();
-		//glib = (GraphLib) new GraphYFiles();	/***YFILES***/
+        //glib = (GraphLib) new GraphYFiles();	/***YFILES***/
     }
     
     /**
@@ -394,6 +394,7 @@ public class GraphManager {
             } else {
                 setVisible(child, true);
             }
+            hideUnusedName(child);
         }
     }
         

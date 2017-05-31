@@ -98,7 +98,8 @@ public class NameRef extends Name {
         String label1 = nv1.getLabel();
         String label2 = nv2.getLabel();
         
-        return ((!nv1.isSubstitued()) && (!nv2.isSubstitued()) && (label1.equals(label2)));
+        //return ((!nv1.isSubstitued()) && (!nv2.isSubstitued()) && (label1.equals(label2)));
+        return label1.equals(label2);
     }
     
     /**

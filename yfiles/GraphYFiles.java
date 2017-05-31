@@ -822,7 +822,7 @@ public class GraphYFiles implements GraphLib {
     
     @Override
     public boolean supportsFolding() {
-        return true;
+        return false;
     }
   
 }

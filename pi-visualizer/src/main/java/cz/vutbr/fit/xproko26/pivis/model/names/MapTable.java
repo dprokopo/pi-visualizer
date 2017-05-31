@@ -74,6 +74,7 @@ public class MapTable extends HashMap<Integer, NameRef> {
 
         if (newref != null) {
             ref.setRef(newref.getRef());
+            ref.setSource(newref.getSource());
             if (newref.isPrivate()) {
                 ref.setPrivate();
             }
