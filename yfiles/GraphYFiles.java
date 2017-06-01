@@ -87,17 +87,30 @@ import cz.vutbr.fit.xproko26.pivis.gui.graph.graphlib.GraphListener;
  */
 public class GraphYFiles implements GraphLib {
 
+    //graph listener for reporting user interaction
     private GraphListener glist;
+    
+    //graph canvas
     private final GraphComponent gcomp;
+    
+    //complete graph representation
     private IGraph origraph;
+    
+    //folding manager
     private FoldingManager foldmanager;
+    
+    //filter wrapper
     private FilteredGraphWrapper filteredGraph;
     
+    //stylesheets
     private HashMap<String, INodeStyle> nodestyles;
     private HashMap<String, IEdgeStyle> edgestyles;
-    private HashMap<String, ILabelStyle> labelstyles;
-    
+    private HashMap<String, ILabelStyle> labelstyles;    
 
+    /**
+     * Initializes graph canvas, prepares visual styles and sets graph
+     * to unediable viewer mode.
+     */
     public GraphYFiles() {
         gcomp = new GraphComponent();
         gcomp.getFocusIndicatorManager().setEnabled(false);
@@ -107,13 +120,10 @@ public class GraphYFiles implements GraphLib {
         enableFolding();
         configureInteraction();        
     }
-    
-    @Override
-    public void addListener(GraphListener glist) {
-        this.glist = glist;
-    }
-        
-    
+            
+    /**
+     * Initializes stylesheets that define the look of nodes and edges.
+     */
     private void setStyles() {
         
         Pen pen = null;
@@ -122,6 +132,8 @@ public class GraphYFiles implements GraphLib {
         edgestyles = new HashMap<>();
         labelstyles = new HashMap<>();
                 
+        // **** node styles ****
+        
         ShapeNodeStyle flowNS = new ShapeNodeStyle();
         flowNS.setShape(ShapeNodeShape.ELLIPSE);
         flowNS.setPaint(Colors.WHITE);
@@ -191,7 +203,8 @@ public class GraphYFiles implements GraphLib {
         pen.setThickness(2);
         selprocNS.setPen(pen);
         nodestyles.put("selproc", selprocNS);
-        
+                
+        // **** edge styles ****
         
         PolylineEdgeStyle paramES = new PolylineEdgeStyle();
         pen = new Pen(Colors.GRAY);
@@ -220,6 +233,8 @@ public class GraphYFiles implements GraphLib {
         flowES.setTargetArrow(defaultArrow);
         flowES.setPen(new Pen(Colors.BLACK));
         edgestyles.put("flow", flowES);
+        
+        // **** selected edge styles ****
         
         PolylineEdgeStyle selparamES = new PolylineEdgeStyle();
         pen = new Pen(Colors.BLUE);
@@ -256,7 +271,7 @@ public class GraphYFiles implements GraphLib {
         selflowES.setPen(pen);
         edgestyles.put("selflow", selflowES);
         
-        
+        // **** label styles ****
         
         INodeDefaults nodeDefaults = gcomp.getGraph().getNodeDefaults();
         ILabelDefaults labelDefaults = nodeDefaults.getLabelDefaults();
@@ -283,28 +298,41 @@ public class GraphYFiles implements GraphLib {
         groupLS.setFont(new Font ("Arial", Font.ITALIC | Font.BOLD , 16));
         groupLS.setInsets(new InsetsD(5,2,5,2));
         labelstyles.put("group", groupLS);
-
     }
     
-    
+    /**
+     * Sets filtered graph wrapper which allows to hide or show some graphic 
+     * entitie according to the predicate.
+     */
     private void setFiltering() {
         origraph = gcomp.getGraph();
         filteredGraph = new FilteredGraphWrapper(origraph, this::nodePredicate , this::edgePredicate);
         gcomp.setGraph(filteredGraph);
     }
     
+    /**
+     * Predicate specifying whether the node should be visible or not.
+     * @param node node to be hidden or shown
+     * @return true if node should be visible
+     */
     private boolean nodePredicate(INode node) {
         CellValue cv = (CellValue) node.getTag();
         return cv.isVisible();
     }
     
+    /**
+     * Predicate specifying whether the edge should be visible or not.
+     * @param edge edge to be hidden or shown
+     * @return true if edge should be visible
+     */
     private boolean edgePredicate(IEdge edge) {
         CellValue cv = (CellValue) edge.getTag();
         return cv.isVisible();
     }
 
-    
-    
+    /**
+     * Creates folding manager which enables folding of group nodes.
+     */    
     private void enableFolding() {
         //create the folding manager
         foldmanager = new FoldingManager(gcomp.getGraph());        
@@ -312,11 +340,16 @@ public class GraphYFiles implements GraphLib {
         gcomp.setGraph(foldmanager.createFoldingView().getGraph());
     }        
     
-    
+    /**
+     * Sets graph into viewer mode and configures basic interaction by setting
+     * several listeners.
+     */
     private void configureInteraction() {
         
+        //create viewer mode
         GraphViewerInputMode vim = new GraphViewerInputMode();      
 
+        //configure navigation mode to report expand/collapse of group node
         NavigationInputMode nm = vim.getNavigationInputMode();
         nm.addGroupCollapsedListener((Object o, ItemEventArgs<INode> args) -> {
             INode n = args.getItem();
@@ -324,8 +357,7 @@ public class GraphYFiles implements GraphLib {
                 INode node = gcomp.getGraph().getFoldingView().getMasterItem(n);
                 glist.nodeCollapsed(node);
             }
-        });
-        
+        });        
         nm.addGroupExpandedListener((Object o, ItemEventArgs<INode> args) -> {
             INode n = args.getItem();
             if (glist != null) {                
@@ -337,14 +369,15 @@ public class GraphYFiles implements GraphLib {
         nm.setExpandGroupAllowed(true);
         nm.setCollapseGroupAllowed(true);
         
-
-        vim.setSelectableItems(GraphItemTypes.NONE); 
+        //disable selection of items
+        vim.setSelectableItems(GraphItemTypes.NONE);
+        //recognize and report click on empty space in graph canvas
         vim.addCanvasClickedListener((Object o, ClickEventArgs t) -> {
             if (glist != null) {
                     glist.canvasClicked();
                 }
         });
-        
+        //recognize and report click on graph item
         vim.addItemLeftClickedListener((Object o, ItemClickedEventArgs<IModelItem> args) -> {
             ICanvasObject cobj = gcomp.getCanvasObject(args.getLocation());
             if (cobj != null) {
@@ -363,19 +396,26 @@ public class GraphYFiles implements GraphLib {
             }            
         });
         
-        vim.setPopupMenuItems(GraphItemTypes.NODE);
-        
+        //enable popup menu for nodes
+        vim.setPopupMenuItems(GraphItemTypes.NODE);        
         AbstractPopupMenuInputMode pop = vim.getPopupMenuInputMode();
         pop.setEnabled(true);
         vim.addPopulateItemPopupMenuListener(this::populateItemPopupMenu);
                                 
         gcomp.setInputMode(vim);
-
     }
     
+    /**
+     * Creates popup menu out of the list of menu items.
+     * @param source listener source
+     * @param args listener arguments
+     */
     private void populateItemPopupMenu(Object source, PopulateItemPopupMenuEventArgs<IModelItem> args) {
+        
+        //obtain menu items from graph manager
         JMenuItem[] items = (glist != null) ? glist.getPopupMenuItems(args.getItem()) : null;
 
+        //create popup menu
         if (items != null) {
             JPopupMenu popupMenu = (JPopupMenu) args.getMenu();
             for (JMenuItem item : items) {
@@ -387,16 +427,33 @@ public class GraphYFiles implements GraphLib {
         args.setHandled(true);
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addListener(GraphListener glist) {
+        this.glist = glist;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void clear() {
         origraph.clear();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JComponent getGraphComponent() {
         return gcomp;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object createNode(Object parent, NodeValue value) {               
         
@@ -404,6 +461,7 @@ public class GraphYFiles implements GraphLib {
         ILabel label = null;
         FolderNodeState foldstat = null;
 
+        //set visual representation of the node based on its type
         switch (value.getType()) {
             case V_NODE:   
                 node = origraph.createNode((INode)parent, new RectD(0, 0, 30, 30), nodestyles.get("node"), value);
@@ -458,10 +516,14 @@ public class GraphYFiles implements GraphLib {
         return node;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object createEdge(Object parent, Object source, Object target, EdgeValue value) {
         IEdge edge = null;
         
+        //set visual representation of the edge based on its type
         switch (value.getType()) {
             case E_FLOW:
                 edge = origraph.createEdge((INode)source, (INode)target, edgestyles.get("flow"), value);
@@ -479,47 +541,68 @@ public class GraphYFiles implements GraphLib {
         return edge;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void executeLayout(boolean animation) {
+        
+        //configure hierarchical layout
         HierarchicLayout layout = new HierarchicLayout();
         layout.prependStage(new FixNodeLayoutStage());
         layout.setLayoutOrientation(LayoutOrientation.LEFT_TO_RIGHT);
         layout.setLayoutMode(LayoutMode.FROM_SCRATCH);
         
+        //add animation if requested
         if (animation) {
             LayoutUtilities.morphLayout(gcomp, layout, Duration.ofMillis(400), null);
         } else {
             LayoutUtilities.applyLayout(gcomp.getGraph(), layout);
         }
         
+        //center graph in graph canvas
         gcomp.fitGraphBounds();
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void collapse(Object[] nodes) {
         IFoldingView view = gcomp.getGraph().getFoldingView();
-        for (Object node : nodes) {            
+        for (Object node : nodes) {
+            //collapse node in current folding view
             view.collapse(view.getViewItem((INode) node));
             if (glist != null) {
+                //report success to graph manager
                 glist.nodeCollapsed(node);
             }
         }
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void expand(Object[] nodes) {
         IFoldingView view = gcomp.getGraph().getFoldingView();
         for (Object node : nodes) {            
+            //expand node in current folding view
             view.expand(view.getViewItem((INode) node));
             if (glist != null) {
+                //report success to graph manager
                 glist.nodeExpanded(node);
             }
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CellValue getValue(Object cell) {
+        
+        //return saved tag
         if (cell instanceof INode)
             return (CellValue)((INode) cell).getTag();
         else if (cell instanceof IEdge)
@@ -528,10 +611,13 @@ public class GraphYFiles implements GraphLib {
             return null;
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Object> getEdges(Object node) {
         List<Object> ret = new ArrayList<>();
+        //use complete graph to obtain both visible and invisible edges
         IListEnumerable <IEdge> edges = origraph.edgesAt((INode)node);
         for (int i=0; i < edges.size(); i++) {
             ret.add(edges.getItem(i));
@@ -539,42 +625,74 @@ public class GraphYFiles implements GraphLib {
         return ret;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getTarget(Object edge) {
-        return ((IEdge) edge).getTargetNode();
-        
+        return ((IEdge) edge).getTargetNode();        
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getSource(Object edge) {
         return ((IEdge) edge).getSourceNode();
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Object> getChildren(Object group) {
         List<Object> ret = new ArrayList<>();
+        //use complete graph to obtain both visible and invisible nodes
         IListEnumerable <INode> children = origraph.getChildren((INode)group);
         for (int i=0; i < children.size(); i++) {
             ret.add(children.getItem(i));
         }
         return ret;
+    }    
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object getParent(Object node) {
+        return origraph.getParent((INode) node);
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void remove(Object o) {
+        origraph.remove((IModelItem)o);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setVisible(Object o, boolean b) {
         if (o instanceof INode) {
             filteredGraph.nodePredicateChanged();
         } else {
+            //prevent broken edges
             origraph.clearBends((IEdge) o);
             filteredGraph.edgePredicateChanged();
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setReductionSelected(Object o, boolean b) {
         if (((NodeValue) getValue(o)).getType() == NodeValue.Type.V_NODE) {
             INode node = (INode) o;
+            //modify style of the specified node
             ShapeNodeStyle style = ((ShapeNodeStyle) node.getStyle()).clone(); 
             if (b) {
                 style.setPaint(Color.RED);
@@ -585,13 +703,17 @@ public class GraphYFiles implements GraphLib {
         }
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setSuggested(Object o, boolean b) {
         if (((NodeValue) getValue(o)).getType() == NodeValue.Type.V_NODE) {
             INode node = (INode) o;
+            //modify style of the specified node
             ShapeNodeStyle style = ((ShapeNodeStyle) node.getStyle()).clone();            
             if (b) {
-                style.setPaint(new Color(255,220,220));
+                style.setPaint(new Color(255,220,220)); //pink color
             } else {
                 style.setPaint(Color.WHITE);
             }            
@@ -599,15 +721,39 @@ public class GraphYFiles implements GraphLib {
         }
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSelected(Object o, boolean b) {
+        
+        if (o instanceof INode) {
+            if (b)
+                selectNode((INode) o);
+            else
+                deselectNode((INode) o);
+        }
+        else if (o instanceof IEdge) {
+            if (b)
+                selectEdge((IEdge) o);
+            else
+                deselectEdge((IEdge) o);
+        }
+    }
     
+    /**
+     * Changes style of the specified node to demonstrate its selection.
+     * @param node selected node
+     */
     private void selectNode(INode node) {
         NodeValue.Type type = ((NodeValue)getValue(node)).getType();  
         
+        //set style based on type of the node
         switch (type) {
             case V_NODE:
             case V_NAME:
             case V_PRIVNAME:
-			case V_PROCNAME:
+            case V_PROCNAME:
                 ShapeNodeStyle style = ((ShapeNodeStyle) node.getStyle()).clone();
                 Pen p = new Pen(Color.BLUE);
                 p.setThickness(2);
@@ -624,9 +770,6 @@ public class GraphYFiles implements GraphLib {
                 origraph.setStyle(node, nodestyles.get("selgroup"));
 
                 SimpleLabelStyle sls = (SimpleLabelStyle) node.getLabels().first().getStyle();
-                IFoldingView view = gcomp.getGraph().getFoldingView();
-                
-                //if (view.isInFoldingState(view.getViewItem(node))) {
                 if (((NodeValue)node.getTag()).isCollapsed()) {
                     sls.setTextPaint(Color.BLACK);
                 } else {
@@ -636,19 +779,20 @@ public class GraphYFiles implements GraphLib {
             case V_NOGROUP:
                 origraph.setStyle(node, nodestyles.get("selnogroup"));
                 break;
-			case V_PROC:
-				origraph.setStyle(node, nodestyles.get("selproc"));
+            case V_PROC:
+                origraph.setStyle(node, nodestyles.get("selproc"));
                 break;
-        }
-        
-
+        }        
     }
     
-    private void deselectNode(INode node) {
-        
+    /**
+     * Changes style of previously selected node back to its normal look.
+     * @param node deselected node
+     */
+    private void deselectNode(INode node) {        
         NodeValue.Type type = ((NodeValue)getValue(node)).getType();  
         
-        
+        //set style based on type of the node
         switch (type) {
             case V_NODE:            
                 ShapeNodeStyle style1 = ((ShapeNodeStyle) node.getStyle()).clone();
@@ -683,14 +827,16 @@ public class GraphYFiles implements GraphLib {
                 origraph.setStyle(node, nodestyles.get("proc"));
                 break;
         }
-        
-        
-        
-
     }
     
+    /**
+     * Changes style of the specified edge to demonstrate its selection.
+     * @param edge selected edge
+     */
     private void selectEdge(IEdge edge) {
-        EdgeValue.Type type = ((EdgeValue)getValue(edge)).getType(); 
+        EdgeValue.Type type = ((EdgeValue)getValue(edge)).getType();
+        
+        //set style based on type of the edge
         switch (type) {
             case E_FLOW:
                 origraph.setStyle(edge, edgestyles.get("selflow"));
@@ -711,9 +857,14 @@ public class GraphYFiles implements GraphLib {
         }
     }
 
-    
+    /**
+     * Changes style of previously selected edge back to its normal look.
+     * @param edge deselected edge
+     */
     private void deselectEdge(IEdge edge) {
         EdgeValue.Type type = ((EdgeValue)getValue(edge)).getType();
+        
+        //set style based on type of the edge
         switch (type) {
             case E_FLOW:
                 origraph.setStyle(edge, edgestyles.get("flow"));
@@ -734,48 +885,24 @@ public class GraphYFiles implements GraphLib {
         }
     }
     
-    
+    /**
+     * Sets specified style for the specified edge in all folding views.
+     * @param edge edge which style should be changed
+     * @param style style to be set
+     */
     private void setFoldStyle(IEdge edge, IEdgeStyle style) {
-
         try {
             Iterator<Entry<FoldingEdgeStateId, FoldingEdgeState>> iter = foldmanager.getAllViewStates(edge).iterator();
             while (iter.hasNext()) {
                 Entry<FoldingEdgeStateId, FoldingEdgeState> entry = iter.next();
                 entry.getValue().setStyle(style);
             }
-        } catch (Exception ex) {
-        }
+        } catch (Exception ex) {} //ignore
     }
     
-    
-    @Override
-    public void setSelected(Object o, boolean b) {
-        
-        if (o instanceof INode) {
-            if (b)
-                selectNode((INode) o);
-            else
-                deselectNode((INode) o);
-        }
-        else if (o instanceof IEdge) {
-            if (b)
-                selectEdge((IEdge) o);
-            else
-                deselectEdge((IEdge) o);
-        }
-    }
-
-    @Override
-    public void remove(Object o) {
-        origraph.remove((IModelItem)o);
-    }
-    
-
-    @Override
-    public Object getParent(Object node) {
-        return origraph.getParent((INode) node);
-    }
-    
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<ExportAction> getExportFormats() {
         List<ExportAction> ret = new ArrayList<>();
@@ -785,14 +912,14 @@ public class GraphYFiles implements GraphLib {
                 (new GraphYFileExporter(gcomp)).export(os, this);
             }
         }); 
-		/*
+        /*
         ret.add(new ExportAction("emf", "emf", true) {
             @Override
             public void export(FileOutputStream os)  throws Exception {
                 (new GraphYFileExporter(gcomp)).export(os, this);
             }
         });
-		*/
+        */
         ret.add(new ExportAction("eps") {
             @Override
             public void export(FileOutputStream os)  throws Exception {
@@ -822,8 +949,13 @@ public class GraphYFiles implements GraphLib {
         return ret;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean supportsFolding() {
+        //yfiles supports automatic folding, but there were some bugs
+        //setting false will let graph manager to show or hide nodes manually
         return false;
     }
   

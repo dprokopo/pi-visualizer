@@ -57,12 +57,23 @@ import cz.vutbr.fit.xproko26.pivis.gui.graph.graphlib.ExportAction;
  */
 public class JGraphXFileExporter {
     
+    //graph canvas containging the graph representation
     private final mxGraphComponent component;
     
+    /**
+     * Initializes class attribute.
+     * @param comp graph canvas with graph to be exported
+     */
     public JGraphXFileExporter(mxGraphComponent comp) {
         component = comp;
     }
     
+    /**
+     * Saves graph into the specified output stream using format specified by export action.
+     * @param os final output stream
+     * @param action export action specifying the exported file format
+     * @throws Exception 
+     */
     public void export(FileOutputStream os, ExportAction action) throws Exception {
         String ext = action.getExtension();
         
@@ -79,11 +90,17 @@ public class JGraphXFileExporter {
             case "eps":
                 exportVector(os, ext, action.isTransparent());
             default:
-                break;
-                
+                break;                
         }
     } 
     
+    /**
+     * Saves graph into the secified bitmap format using mxCellRenderer.
+     * @param os output stream
+     * @param extension extension specifying the format of the file
+     * @param transparent true if background should be transparent
+     * @throws Exception 
+     */
     public void exportBitmap(FileOutputStream os, String extension, boolean transparent) throws Exception {
         
         mxGraph graph = component.getGraph(); 
@@ -91,17 +108,27 @@ public class JGraphXFileExporter {
         ImageIO.write(image, extension, os);
     }
     
+    /**
+     * Transfers graph into svg document with the usage of mxCellRenderer.
+     * @param os output sream
+     * @throws Exception 
+     */
     public void exportSvg(FileOutputStream os, String extension) throws Exception {
         
         mxGraph graph = component.getGraph();        
         Document doc = mxCellRenderer.createSvgDocument(graph, null, graph.getView().getScale(), null, null);
         
-        // write the SVG Document into the specified file
+        //write the SVG Document into the specified file
         OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8");
-        writeDocument(doc, writer);
-       
+        writeDocument(doc, writer);       
     }
     
+    /**
+     * Writes created svg document into the file.
+     * @param svgDocument created svg document
+     * @param writer output stream writer
+     * @throws Exception 
+     */
     private void writeDocument(Document doc, Writer writer) throws Exception {
         try {
             //prepare the DOM document for writing
@@ -122,7 +149,12 @@ public class JGraphXFileExporter {
         }
     }
     
-    
+    /**
+     * Exports graph into vector formats (not svg) using FreeHEP library.
+     * @param os output stream
+     * @param extension extension specifying the format of the file
+     * @param transparent true if background should be transparent
+     */    
     public void exportVector(FileOutputStream os, String extension, boolean transparent) throws Exception {
 
         mxGraph graph = component.getGraph(); 
@@ -130,7 +162,7 @@ public class JGraphXFileExporter {
         java.awt.Rectangle rect = graph.getPaintBounds(cells).getRectangle();
         Dimension size = new Dimension((int)rect.getWidth()+2, (int)rect.getHeight()+2);
         
-        // create and initialize the VectorGraphics
+        //create and initialize the VectorGraphics
         final VectorGraphics gfx;
         switch (extension) {
             case "eps":
@@ -147,7 +179,7 @@ public class JGraphXFileExporter {
 
         final Graphics2D graphics = (Graphics2D) gfx.create();
         try {
-            // fill background
+            //fill background
             Paint fill = (transparent) ? null : Color.WHITE;
             if (fill != null) {
                 final Paint oldPaint = graphics.getPaint();
@@ -181,12 +213,24 @@ public class JGraphXFileExporter {
         gfx.endExport();
     }    
     
+    /**
+     * Prepares emf graphic.
+     * @param os output stream
+     * @param size size of the exported graphic
+     * @return created emf graphic
+     */
     private EMFGraphics2D createEmfGraphics(FileOutputStream os, Dimension size) {
         EMFGraphics2D gfx = new EMFGraphics2D(os, size);
         gfx.setDeviceIndependent(true);
         return gfx;
     }
 
+    /**
+     * Prepares eps graphic.
+     * @param os output stream
+     * @param size size of the exported graphic
+     * @return created eps graphic
+     */
     private EPSGraphics2D createEpsGraphics(FileOutputStream os, Dimension size) {
         Properties properties = new Properties();
         properties.putAll(EPSGraphics2D.getDefaultProperties());

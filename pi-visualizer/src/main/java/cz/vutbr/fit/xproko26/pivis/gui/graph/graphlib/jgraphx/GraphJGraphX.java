@@ -62,12 +62,22 @@ import cz.vutbr.fit.xproko26.pivis.gui.graph.graphlib.jgraphx.layout.mxHierarchi
  */
 public class GraphJGraphX implements GraphLib {
 
+    //graph listener for reporting user interaction
     private GraphListener glist;
+    
+    //graph canvas
     private final mxGraphComponent gcomp;
+    
+    //complete graph representation
     private mxGraph graph;  
     
+    /**
+     * Initializes graph and graph canvas, prepares visual styles and sets graph
+     * to uneditable viewer mode.
+     */
     public GraphJGraphX() {
         
+        //create graph
         graph = new mxGraph() {
             @Override
             public boolean isCellFoldable(Object cell, boolean collapse) {
@@ -77,6 +87,7 @@ public class GraphJGraphX implements GraphLib {
             }                        
         };
                 
+        //enable folding of group nodes
         graph.addListener(mxEvent.CELLS_FOLDED, new mxEventSource.mxIEventListener() {
             @Override
             public void invoke(Object o, mxEventObject eo) {
@@ -84,307 +95,44 @@ public class GraphJGraphX implements GraphLib {
                 for (Object n : array) {
                     mxCell cell = (mxCell) n;
                     if (cell.isCollapsed()) {
+                        //report that node was collapsed
                         glist.nodeCollapsed(n);                                                
                     } else {                 
+                        //report that node was expanded
                         glist.nodeExpanded(n);                        
                     }
                 }
             }            
         });
         
+        //configure graph
         configureGraph();
         
+        //create graph component containing the created graph
         gcomp = new mxGraphComponent(graph)
         {
             @Override
             public boolean isPanningEvent(MouseEvent e) {
+                //enable panning if not clicked on item
                 if (gcomp.getCellAt(e.getX(), e.getY()) != null) {
                     return false;
                 }
                 return true;
             }
         };
-
+        //configure graph component               
         configureGraphComponent();
+        
+        //set stylesheets
         setStyles();
+        
+        //set user interaction
         setUserInteraction();
     }
     
-    
-    @Override
-    public void addListener(GraphListener glist) {
-        this.glist = glist;
-    }
-
-    
-    
-    private void setUserInteraction() {
-        ;
-        gcomp.getGraphControl().addMouseListener(new MouseAdapter() {
-
-            public void mousePressed(MouseEvent e) {
-                
-                if (e.getButton() == 1) {
-                    mxCell cell = (mxCell) gcomp.getCellAt(e.getX(), e.getY());
-                    if (cell == null) {
-                        if (glist != null) {
-                            glist.canvasClicked();
-                        }
-                    } else {
-                        if (cell.isVertex()) {
-                            if (glist != null) {
-                                glist.nodeClicked(cell);
-                            }
-                        }
-                    }
-                }
-                else {
-                    // handles context menu on the Mac where the trigger is on mousepressed
-                    mouseReleased(e);
-                }
-            }
-
-            public void mouseReleased(MouseEvent e) {
-                if (e.isPopupTrigger()) {
-                    showGraphPopupMenu(e);
-                }
-            }
-        });
-        
-        //mxGraphOutline graphOutline = new mxGraphOutline(gcomp);
-        
-        MouseWheelListener wheelTracker = new MouseWheelListener() {
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e)
-            {
-                //if (e.isControlDown()) {
-                    if (e.getWheelRotation() < 0) {
-                        gcomp.zoomIn();
-                    } else {
-                        gcomp.zoomOut();
-                    }
-                //}
-            }
-        };
-
-        //graphOutline.addMouseWheelListener(wheelTracker);
-        gcomp.getGraphControl().addMouseWheelListener(wheelTracker);
-
-    }
-    
-    private void showGraphPopupMenu(MouseEvent e) {        
-        Object cell = gcomp.getCellAt(e.getX(), e.getY());
-        if (cell != null) {
-            if (graph.getModel().isVertex(cell)) {
-                JMenuItem[] items = glist.getPopupMenuItems(cell);
-                if (items != null && items.length > 0) {
-                    JPopupMenu menu = new JPopupMenu();
-                    for (JMenuItem item : items) {
-                        menu.add(item);
-                    }
-                    Point pt = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), gcomp);
-                    menu.show(gcomp, pt.x, pt.y);
-                }            
-            }
-        }
-        e.consume();
-    }
-
-    @Override
-    public JComponent getGraphComponent() {
-        return gcomp;
-    }
-
-    private mxHierarchicalLayout graphLayout(mxGraph graph) {
-        
-        mxHierarchicalLayout layout = new mxHierarchicalLayout(graph);
-        layout.setOrientation(SwingConstants.WEST);
-        layout.setResizeParent(true);
-        layout.setMoveParent(true);
-        layout.setLayoutFromSinks(false);
-        layout.setParentBorder(20);
-        layout.setInterRankCellSpacing(75);
-        return layout;
-        
-    }
-    
-    private void executeSubLayout(mxICell group) {
-
-        graph.getModel().beginUpdate();
-        try {
-            graphLayout(graph).execute(group, getGroupRoot(group));
-        } finally {
-            graph.getModel().endUpdate();
-        }
-        
-    }
-    
-    private Object[] getGroupRoot(mxICell group) {
-                
-        mxIGraphModel model = graph.getModel();
-        for (int i = 0; i < group.getChildCount(); i++) {
-            mxCell cell = (mxCell) model.getChildAt(group, i);
-            if (model.isVertex(cell)) {
-                List<Object> edges = getEdges(cell);
-                boolean rootcandidate = true;
-                for (Object edge : edges) {
-                    mxCell source = (mxCell) getSource(edge);
-                    mxCell target = (mxCell) getTarget(edge);
-                    
-                    //check if the source node was in one of the previous groups
-                    mxICell groupparent = group.getParent();
-                    while (groupparent != null) {
-                        if (source.getParent().getId().equals(groupparent.getId())) {
-                            return new Object[] { cell };                        
-                        }
-                        groupparent = groupparent.getParent();
-                    }
-                    if (target.getId().equals(cell.getId())) {
-                        rootcandidate = false;
-                    }
-                }
-                if (rootcandidate) {
-                    return new Object[] {cell};
-                }
-            }
-        }
-        return null;
-    }
-    
-    
-    
-    
-    private void layoutChildren(mxICell group) {
-        for (Object o : getChildren(group)) {
-            mxICell child = (mxICell) o;
-            if (child.isVertex() && graph.isCellFoldable(child, true) && !child.isCollapsed()) {
-                layoutChildren(child);
-            }
-        }
-        executeSubLayout(group);
-    }
-    
-    
-    @Override
-    public void executeLayout(boolean animation) {
-                      
-        graph.getModel().beginUpdate();
-        try {
-            graph.getModel().setGeometry(graph.getDefaultParent(), new mxGeometry(0, 0, 0, 0));        
-        } finally {
-            graph.getModel().endUpdate();            
-        }      
-
-        for (Object o : getChildren(graph.getDefaultParent())) {
-            mxICell child = (mxICell) o;
-            if (child.isVertex() && graph.isCellFoldable(child, true) && !child.isCollapsed()) {
-                layoutChildren(child);
-            }
-        }
-
-
-        graph.getModel().beginUpdate();
-        try {
-            graphLayout(graph).execute(graph.getDefaultParent());
-        } finally {
-            center();
-            /*
-            if (animation) {
-                mxMorphing morph = new mxMorphing(gcomp);
-                morph.addListener(mxEvent.DONE, new mxIEventListener() {
-                    @Override
-                    public void invoke(Object arg0, mxEventObject arg1) {
-                        graph.getModel().endUpdate();
-                    }
-                });
-                
-                morph.startAnimation();
-            } else {
-                graph.getModel().endUpdate();
-            }
-            */
-            
-            graph.getModel().endUpdate();
-        }        
-        
-    }
-
-
-    @Override
-    public void clear() {
-        graph.removeCells(graph.getChildCells(graph.getDefaultParent()));
-    }
-
-    @Override
-    public Object createNode(Object parent, NodeValue value) {
-        
-        graph.getModel().beginUpdate();
-        mxCell node = (mxCell) graph.insertVertex((parent == null) ? graph.getDefaultParent() : parent, String.valueOf(value.getID()), value, 0, 0, 36, 36);
-        
-        switch (value.getType()) {
-            case V_NODE:
-                node.setStyle("node");
-                break;
-            case V_NAME:
-                node.setStyle("name");
-                graph.updateCellSize(node);
-                break;
-            case V_PRIVNAME:
-                node.setStyle("privname");              
-                graph.updateCellSize(node);               
-                break;                     
-            case V_PROCNAME:
-                node.setStyle("procname");              
-                graph.updateCellSize(node);               
-                break;  
-            case V_LGROUP:
-            case V_HGROUP:
-                node.setStyle("group");
-                graph.updateCellSize(node); 
-                node.getGeometry().setAlternateBounds(new mxRectangle(0, 0, node.getGeometry().getWidth(), node.getGeometry().getHeight()));                                                                               
-                break;
-            case V_NOGROUP:
-                node.setStyle("nogroup");
-                graph.updateCellSize(node);
-                break;
-            case V_PROC:
-                node.setStyle("proc");
-                graph.updateCellSize(node);
-                break;
-        }
-        
-        graph.getModel().endUpdate();        
-        return node;
-    }
-
-    @Override
-    public Object createEdge(Object parent, Object source, Object target, EdgeValue value) {
-        
-        graph.getModel().beginUpdate();
-        mxCell edge = (mxCell) graph.insertEdge((parent == null) ? graph.getDefaultParent() : parent, String.valueOf(value.getID()), value, source, target);
-        
-        switch (value.getType()) {
-            case E_FLOW:
-                edge.setStyle("flow");
-                break;
-            case E_PARAM:
-                edge.setStyle("param");
-                break;
-            case E_IN:
-                edge.setStyle("in");
-                break;
-            case E_OUT:
-                edge.setStyle("out");
-                break;
-        }
-        
-        graph.getModel().endUpdate();        
-        return edge;
-    }
-    
-    
-        
-    
+    /**
+     * Configures graph to allow only basic interaction, but not structure modification.
+     */
     private void configureGraph() {
         
         graph.setCellsEditable(false);          //disable label editing
@@ -396,13 +144,14 @@ public class GraphJGraphX implements GraphLib {
         graph.setAutoSizeCells(true);
         graph.setConstrainChildren(true);
         graph.setDefaultOverlap(0);              
-        graph.setCollapseToPreferredSize(true);
-        
+        graph.setCollapseToPreferredSize(true);        
     }
     
+    /**
+     * Configures graph component to allow only basic interaction, but not structure modification.
+     */
     private void configureGraphComponent() {
         
-        //gcomp.setEnabled(false);
         gcomp.setConnectable(false);
         gcomp.setDragEnabled(false);           
         gcomp.getGraphHandler().setRemoveCellsFromParent(false);        
@@ -413,13 +162,11 @@ public class GraphJGraphX implements GraphLib {
         
         mxSwingConstants.EDGE_SELECTION_COLOR = new Color(0,0,0,0);
         mxSwingConstants.VERTEX_SELECTION_COLOR = new Color(0,0,0,0);
-        
-        //enable multi selection
-        //mxRubberband rubberband = new mxRubberband(gcomp);
-        //rubberband.setFillColor(new Color(220,220,255,150));
     }
     
-    
+    /**
+     * Initializes stylesheets that define look of the nodes and edges.
+     */
     private void setStyles() {
         
         //style edges - default
@@ -452,7 +199,6 @@ public class GraphJGraphX implements GraphLib {
         style.put(mxConstants.STYLE_DASHED, true);
         style.put(mxConstants.STYLE_DASH_PATTERN, 3);
         style.put(mxConstants.STYLE_ENDARROW, mxConstants.NONE);
-        //style.put(mxConstants.STYLE_EDGE, mxEdgeStyle.EntityRelation);
         graph.getStylesheet().putCellStyle("param", style);
 
         
@@ -532,11 +278,218 @@ public class GraphJGraphX implements GraphLib {
 	style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_SWIMLANE);
         style.put(mxConstants.STYLE_SHADOW, true);
         style.put(mxConstants.STYLE_FOLDABLE, false);
-        graph.getStylesheet().putCellStyle("proc", style);
+        graph.getStylesheet().putCellStyle("proc", style);        
+    }
+    
+    /**
+     * Configures basic user interaction by setting several listeners.
+     */
+    private void setUserInteraction() {
+
+        //add mouse listener to report click on item or canvas
+        gcomp.getGraphControl().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {                
+                if (e.getButton() == 1) {
+                    mxCell cell = (mxCell) gcomp.getCellAt(e.getX(), e.getY());
+                    if (cell == null) {
+                        if (glist != null) {
+                            //graph canvas was clicked
+                            glist.canvasClicked();
+                        }
+                    } else {
+                        if (cell.isVertex()) {
+                            if (glist != null) {
+                                //node was clicked
+                                glist.nodeClicked(cell);
+                            }
+                        }
+                    }
+                }
+                else {
+                    // handles context menu on the Mac where the trigger is on mousepressed
+                    mouseReleased(e);
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    //create popup menu
+                    showGraphPopupMenu(e);
+                }
+            }
+        });
         
+        //add mouse wheel listener to zoom in or out
+        gcomp.getGraphControl().addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e)
+            {
+                if (e.getWheelRotation() < 0) {
+                    gcomp.zoomIn();
+                } else {
+                    gcomp.zoomOut();
+                }
+            }
+        });
+
+    }
+    
+    /**
+     * Create popup menu for specified right mouse click event
+     * @param e right mouse click event
+     */
+    private void showGraphPopupMenu(MouseEvent e) {        
+        Object cell = gcomp.getCellAt(e.getX(), e.getY());
+        if (cell != null) {
+            //check if clicked item is node
+            if (graph.getModel().isVertex(cell)) {
+                //obtain menu items from graph manager
+                JMenuItem[] items = glist.getPopupMenuItems(cell);
+                if (items != null && items.length > 0) {
+                    JPopupMenu menu = new JPopupMenu();
+                    for (JMenuItem item : items) {
+                        menu.add(item);
+                    }
+                    //transfer coordinates
+                    Point pt = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), gcomp);
+                    menu.show(gcomp, pt.x, pt.y);
+                }            
+            }
+        }
+        e.consume();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addListener(GraphListener glist) {
+        this.glist = glist;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public JComponent getGraphComponent() {
+        return gcomp;
+    }
     
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void executeLayout(boolean animation) {
+                      
+        graph.getModel().beginUpdate();
+        try {
+            //important for final centering
+            graph.getModel().setGeometry(graph.getDefaultParent(), new mxGeometry(0, 0, 0, 0));        
+        } finally {
+            graph.getModel().endUpdate();            
+        }      
+
+        //layout all groups separately
+        for (Object o : getChildren(graph.getDefaultParent())) {
+            mxICell child = (mxICell) o;
+            if (child.isVertex() && graph.isCellFoldable(child, true) && !child.isCollapsed()) {
+                layoutChildren(child);
+            }
+        }
+
+        //execute layout for the whole graph
+        graph.getModel().beginUpdate();
+        try {
+            graphLayout(graph).execute(graph.getDefaultParent());
+        } finally {
+            //center the graph in the graph canvas
+            center();
+            graph.getModel().endUpdate();
+        }                
+    }
+    
+    /**
+     * Configures hierarchical layout.
+     * @param graph graph to layout
+     * @return hierarchical layout
+     */
+    private mxHierarchicalLayout graphLayout(mxGraph graph) {
+        
+        mxHierarchicalLayout layout = new mxHierarchicalLayout(graph);
+        layout.setOrientation(SwingConstants.WEST);
+        layout.setResizeParent(true);
+        layout.setMoveParent(true);
+        layout.setLayoutFromSinks(false);
+        layout.setParentBorder(20);
+        layout.setInterRankCellSpacing(75);
+        return layout;
+        
+    }
+    
+    /**
+     * Executes layout for elements in a single group node. Recursively calls itself
+     * for all group nodes found as children.
+     * @param group group node to be positioned
+     */
+    private void layoutChildren(mxICell group) {
+        
+        for (Object o : getChildren(group)) {
+            mxICell child = (mxICell) o;
+            if (child.isVertex() && graph.isCellFoldable(child, true) && !child.isCollapsed()) {
+                layoutChildren(child);
+            }
+        }
+        
+        graph.getModel().beginUpdate();
+        try {
+            graphLayout(graph).execute(group, getGroupRoot(group));
+        } finally {
+            graph.getModel().endUpdate();
+        }
+    }
+    
+    /**
+     * Searches for the root node of the group.
+     * @param group group for which the root should be found
+     * @return array of roots
+     */
+    private Object[] getGroupRoot(mxICell group) {
+                
+        mxIGraphModel model = graph.getModel();
+        for (int i = 0; i < group.getChildCount(); i++) {
+            mxCell cell = (mxCell) model.getChildAt(group, i);
+            if (model.isVertex(cell)) {
+                List<Object> edges = getEdges(cell);
+                boolean rootcandidate = true;
+                for (Object edge : edges) {
+                    mxCell source = (mxCell) getSource(edge);
+                    mxCell target = (mxCell) getTarget(edge);
+                    
+                    //check if the source node was in one of the previous groups
+                    mxICell groupparent = group.getParent();
+                    while (groupparent != null) {
+                        if (source.getParent().getId().equals(groupparent.getId())) {
+                            return new Object[] { cell };                        
+                        }
+                        groupparent = groupparent.getParent();
+                    }
+                    if (target.getId().equals(cell.getId())) {
+                        rootcandidate = false;
+                    }
+                }
+                if (rootcandidate) {
+                    return new Object[] {cell};
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Places the layouted graph into the center of the graph canvas.
+     */
     public void center() {                  
 
         graph.refresh();
@@ -571,14 +524,103 @@ public class GraphJGraphX implements GraphLib {
         graph.getModel().setGeometry(graph.getDefaultParent(), new mxGeometry(widthoffset+g.getX(), heightoffset+g.getY(), g.getWidth(), g.getHeight()));
         graph.setMinimumGraphSize(new mxRectangle(0,0,graphwidth+2*w,graphheight+2*h));                 
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void clear() {
+        graph.removeCells(graph.getChildCells(graph.getDefaultParent()));
+    }
 
+    /**
+     * {@inheritDoc}
+     */    
+    @Override
+    public Object createNode(Object parent, NodeValue value) {
+        
+        graph.getModel().beginUpdate();
+        mxCell node = (mxCell) graph.insertVertex((parent == null) ? graph.getDefaultParent() : parent, String.valueOf(value.getID()), value, 0, 0, 36, 36);
+        
+        //set visual representation of the node based on its type
+        switch (value.getType()) {
+            case V_NODE:
+                node.setStyle("node");
+                break;
+            case V_NAME:
+                node.setStyle("name");
+                graph.updateCellSize(node);
+                break;
+            case V_PRIVNAME:
+                node.setStyle("privname");              
+                graph.updateCellSize(node);               
+                break;                     
+            case V_PROCNAME:
+                node.setStyle("procname");              
+                graph.updateCellSize(node);               
+                break;  
+            case V_LGROUP:
+            case V_HGROUP:
+                node.setStyle("group");
+                graph.updateCellSize(node); 
+                node.getGeometry().setAlternateBounds(new mxRectangle(0, 0, node.getGeometry().getWidth(), node.getGeometry().getHeight()));                                                                               
+                break;
+            case V_NOGROUP:
+                node.setStyle("nogroup");
+                graph.updateCellSize(node);
+                break;
+            case V_PROC:
+                node.setStyle("proc");
+                graph.updateCellSize(node);
+                break;
+        }
+        
+        graph.getModel().endUpdate();        
+        return node;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object createEdge(Object parent, Object source, Object target, EdgeValue value) {
+        
+        graph.getModel().beginUpdate();
+        mxCell edge = (mxCell) graph.insertEdge((parent == null) ? graph.getDefaultParent() : parent, String.valueOf(value.getID()), value, source, target);
+        
+        //set visual representation of the edge based on its type
+        switch (value.getType()) {
+            case E_FLOW:
+                edge.setStyle("flow");
+                break;
+            case E_PARAM:
+                edge.setStyle("param");
+                break;
+            case E_IN:
+                edge.setStyle("in");
+                break;
+            case E_OUT:
+                edge.setStyle("out");
+                break;
+        }
+        
+        graph.getModel().endUpdate();        
+        return edge;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void collapse(Object[] nodes) {
         graph.getModel().beginUpdate();  
         graph.foldCells(true, true, nodes);
         graph.getModel().endUpdate();
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */    
     @Override
     public void expand(Object[] nodes) {
         graph.getModel().beginUpdate();  
@@ -586,42 +628,78 @@ public class GraphJGraphX implements GraphLib {
         graph.getModel().endUpdate();
     }
 
+    /**
+     * {@inheritDoc}
+     */    
     @Override
     public CellValue getValue(Object cell) {
         return (CellValue)((mxCell) cell).getValue();
     }
 
+    /**
+     * {@inheritDoc}
+     */    
     @Override
     public List<Object> getEdges(Object node) {
         return Arrays.asList(mxGraphModel.getEdges(graph.getModel(), node));
     }
 
+    /**
+     * {@inheritDoc}
+     */    
     @Override
     public Object getTarget(Object edge) {
-        return ((mxCell) edge).getTarget();
-        
+        return ((mxCell) edge).getTarget();        
     }
 
+    /**
+     * {@inheritDoc}
+     */    
     @Override
     public Object getSource(Object edge) {
         return ((mxCell) edge).getSource();
     }
     
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Object> getChildren(Object group) {
         return Arrays.asList(mxGraphModel.getChildVertices(graph.getModel(), group));
     }
     
+    /**
+     * {@inheritDoc}
+     */    
+    @Override
+    public void remove(Object o) {
+        graph.removeCells(new Object[] {o});
+    }
+
+    /**
+     * {@inheritDoc}
+     */    
+    @Override
+    public Object getParent(Object node) {
+        return ((mxCell) node).getParent();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */    
     @Override
     public void setVisible(Object o, boolean b) {
         mxCell cell = (mxCell) o;
         cell.setVisible(b);
     }
     
+    /**
+     * {@inheritDoc}
+     */    
     @Override
     public void setReductionSelected(Object o, boolean b) {
         if (((NodeValue) getValue(o)).getType() == NodeValue.Type.V_NODE) {
+            //modify style of the specified node
             if (b) {
                 graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, "#ff0000", new Object[]{o});
             } else {
@@ -631,9 +709,13 @@ public class GraphJGraphX implements GraphLib {
         }        
     }
     
+    /**
+     * {@inheritDoc}
+     */    
     @Override
     public void setSuggested(Object o, boolean b) {
         if (((NodeValue) getValue(o)).getType() == NodeValue.Type.V_NODE) {
+            //modify style of the specified node
             if (b) {
                 graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, "#ffdcdc", new Object[]{o});
             } else {
@@ -641,27 +723,64 @@ public class GraphJGraphX implements GraphLib {
             }
             graph.refresh();
         }        
-    }
-        
+    }         
     
+    /**
+     * {@inheritDoc}
+     */    
+    @Override
+    public void setSelected(Object o, boolean b) {
+        mxCell cell = (mxCell) o;
+        if (cell.isVertex()) {
+            if (b) {
+                selectNode(cell);
+            } else {
+                deselectNode(cell);
+            }
+        }
+        else if (cell.isEdge()) {
+            if (b) {
+                selectEdge(cell);
+            } else {
+                deselectEdge(cell);
+            }
+        }
+    }
+    
+    /**
+     * Changes style of the specified node to demonstrate its selection.
+     * @param cell selected node
+     */    
     private void selectNode(mxCell cell) {
         graph.setCellStyles(mxConstants.STYLE_STROKECOLOR, "#0000ff", new Object[]{cell});
         graph.setCellStyles(mxConstants.STYLE_STROKEWIDTH, "2", new Object[]{cell});
         gcomp.refresh();
     }
     
+    /**
+     * Changes style of previously selected node back to its normal look.
+     * @param cell deselected node
+     */    
     private void deselectNode(mxCell cell) {
         graph.setCellStyles(mxConstants.STYLE_STROKECOLOR, "#000000", new Object[]{cell});
         graph.setCellStyles(mxConstants.STYLE_STROKEWIDTH, "1", new Object[]{cell});
         gcomp.refresh();
     }
     
+    /**
+     * Changes style of the specified edge to demonstrate its selection.
+     * @param cell selected edge
+     */
     private void selectEdge(mxCell cell) {
         graph.setCellStyles(mxConstants.STYLE_STROKECOLOR, "#0000ff", new Object[]{cell});
         graph.setCellStyles(mxConstants.STYLE_STROKEWIDTH, "2", new Object[]{cell});
         gcomp.refresh();
     }
     
+    /**
+     * Changes style of previously selected edge back to its normal look.
+     * @param cell deselected edge
+     */
     private void deselectEdge(mxCell cell) {
         
         EdgeValue.Type type = ((EdgeValue)getValue(cell)).getType();
@@ -683,38 +802,11 @@ public class GraphJGraphX implements GraphLib {
         graph.setCellStyles(mxConstants.STYLE_STROKEWIDTH, "1", new Object[]{cell});
         gcomp.refresh();
     }
-    
-    
-    @Override
-    public void setSelected(Object o, boolean b) { //TODO
-        mxCell cell = (mxCell) o;
-        if (cell.isVertex()) {
-            if (b) {
-                selectNode(cell);
-            } else {
-                deselectNode(cell);
-            }
-        }
-        else if (cell.isEdge()) {
-            if (b) {
-                selectEdge(cell);
-            } else {
-                deselectEdge(cell);
-            }
-        }
-    }
 
-
+    /**
+     * {@inheritDoc}
+     */ 
     @Override
-    public void remove(Object o) {
-        graph.removeCells(new Object[] {o});
-    }
-
-    @Override
-    public Object getParent(Object node) {
-        return ((mxCell) node).getParent();
-    }
-    
     public List<ExportAction> getExportFormats() {
         List<ExportAction> ret = new ArrayList<>();
         ret.add(new ExportAction("svg") {
@@ -756,6 +848,9 @@ public class GraphJGraphX implements GraphLib {
         return ret;
     }
 
+    /**
+     * {@inheritDoc}
+     */     
     @Override
     public boolean supportsFolding() {
         return true;

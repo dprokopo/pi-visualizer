@@ -23,9 +23,8 @@ import com.yworks.yfiles.view.GraphComponent;
 import com.yworks.yfiles.view.IRenderContext;
 import com.yworks.yfiles.view.export.ContextConfigurator;
 import com.yworks.yfiles.view.export.PixelImageExporter;
+
 import java.awt.Color;
-
-
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -41,7 +40,6 @@ import org.freehep.graphics2d.VectorGraphics;
 import org.freehep.graphicsbase.util.UserProperties;
 import org.freehep.graphicsio.emf.EMFGraphics2D;
 import org.freehep.graphicsio.ps.EPSGraphics2D;
-
 import org.apache.batik.dom.svg.SVGDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.batik.util.XMLConstants;
@@ -65,16 +63,26 @@ import cz.vutbr.fit.xproko26.pivis.gui.graph.graphlib.ExportAction;
  */
 public class GraphYFileExporter {
     
+    //graph canvas containging the graph representation
     private final GraphComponent component;
+    
+    //bitmap exporter tool
     private final PixelImageExporter exporter;
     
+    /**
+     * Initializes class attributes.
+     * @param comp graph canvas with graph to be exported
+     */
     GraphYFileExporter(GraphComponent comp) {
         component = comp;
         exporter = new PixelImageExporter(createContextConfigurator());
     }
     
+    /**
+     * Creates copy of the graph component without any selectors and additional stuff.
+     * @return copy of graph component containing graph to be visualized
+     */
     private GraphComponent getExportComponent() {
-        //create new component without selectors, etc.
         GraphComponent comp = new GraphComponent();
         comp.setSize(component.getSize());
         comp.setGraph(component.getGraph());
@@ -84,6 +92,10 @@ public class GraphYFileExporter {
         return comp;
     }
     
+    /**
+     * Cuts relevant part of the graph canvas and sets its zoom.
+     * @return part of the canvas to be exported
+     */
     private ContextConfigurator createContextConfigurator() {
         RectD regionToExport = component.getContentRect();
         ContextConfigurator configurator = new ContextConfigurator(regionToExport.getEnlarged(1));
@@ -91,7 +103,14 @@ public class GraphYFileExporter {
         return configurator;
     }
         
+    /**
+     * Saves graph into specified output stream using format specified by export action.
+     * @param os final output stream
+     * @param action export action specifying the exported file format
+     * @throws Exception 
+     */
     public void export(FileOutputStream os, ExportAction action) throws Exception {
+        //choose appropriate function based on the file extension/format
         if (exporter.isFormatSupported(action.getExtension())) {
             exportBitmap(os, action.getExtension(), action.isTransparent());
         } else if (action.getExtension().equals("svg")){
@@ -101,16 +120,37 @@ public class GraphYFileExporter {
         }
     }        
     
+    /**
+     * Saves graph into secified bitmap format using exporter tool.
+     * @param os output stream
+     * @param extension extension specifying the format of the file
+     * @param transparent true if background should be transparent
+     * @throws Exception 
+     */
     public void exportBitmap(FileOutputStream os, String extension, boolean transparent) throws Exception {       
         if (transparent) {
             exporter.setTransparencyEnabled(true);
         } else {
             exporter.setUsingCanvasComponentBackgroundColorEnabled(true);
-        }
-        
+        }        
         exporter.export(getExportComponent(), os, extension);         
     }
 
+    /**
+     * Transfers graph into svg document.
+     * @param os output sream
+     * @throws Exception 
+     */
+    public void exportSvg(FileOutputStream os) throws Exception {
+        // write the SVG Document into the specified file
+        OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8");
+        writeDocument(getSVGDocFragment(), writer);
+    }
+    
+    /**
+     * Returns created svg document fragment.
+     * @return svg document
+     */
     public DocumentFragment getSVGDocFragment() {
         //export to an SVG element
         Element svgRoot = exportToSVGElement();
@@ -120,13 +160,10 @@ public class GraphYFileExporter {
         return svgDocumentFragment;
     }
     
-    
-    public void exportSvg(FileOutputStream os) throws Exception {
-        // write the SVG Document into the specified file
-        OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8");
-        writeDocument(getSVGDocFragment(), writer);
-    }
-    
+    /**
+     * Encodes graphic representation into svg document.
+     * @return svg document root
+     */
     private Element exportToSVGElement() {
         //create a SVG document
         DOMImplementation impl = SVGDOMImplementation.getDOMImplementation();
@@ -146,6 +183,12 @@ public class GraphYFileExporter {
         return svgRoot;
     }
     
+    /**
+     * Writes created svg document into file
+     * @param svgDocument created svg document
+     * @param writer output stream writer
+     * @throws Exception 
+     */
     private void writeDocument(DocumentFragment svgDocument, Writer writer) throws Exception {
         try {
             //prepare the DOM document for writing
@@ -167,6 +210,8 @@ public class GraphYFileExporter {
 
     /**
      * Paints the canvas on the provided graphics context.
+     * @param canvas graph canvas
+     * @param gfx graphics context
      */
     private void paint(CanvasComponent canvas, Graphics2D gfx) {
         gfx.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -174,7 +219,7 @@ public class GraphYFileExporter {
         final ContextConfigurator cnfg = createContextConfigurator();
         final Graphics2D graphics = (Graphics2D) gfx.create();
         try {
-            // fill background
+            //fill background
             Paint fill = Colors.TRANSPARENT;
             if (fill != null) {
                 final Paint oldPaint = graphics.getPaint();
@@ -186,22 +231,26 @@ public class GraphYFileExporter {
             IRenderContext paintContext = cnfg.createRenderContext(canvas);
             graphics.transform(paintContext.getToWorldTransform());
 
-            // export the canvas content
+            //export the canvas content
             canvas.exportContent(paintContext).paint(paintContext, graphics);
         } finally {
             graphics.dispose();
         }
     }
     
-    
-    
+    /**
+     * Exports graph into vector formats (not svg) using FreeHEP library.
+     * @param os output stream
+     * @param extension extension specifying the format of the file
+     * @param transparent true if background should be transparent
+     */    
     public void exportVector(FileOutputStream os, String extension, boolean transparent) {
             
         final ContextConfigurator cnfg = createContextConfigurator();
         final GraphComponent canvas = getExportComponent();
         final Dimension size = new Dimension(cnfg.getViewWidth(), cnfg.getViewHeight());
 
-        // create and initialize the VectorGraphics
+        //create and initialize the VectorGraphics
         final VectorGraphics gfx;
         switch (extension) {
             case "eps":
@@ -218,7 +267,7 @@ public class GraphYFileExporter {
 
         final Graphics2D graphics = (Graphics2D) gfx.create();
         try {
-            // fill background
+            //fill background
             Paint fill = (transparent) ? Colors.TRANSPARENT : Color.WHITE;
             if (fill != null) {
                 final Paint oldPaint = graphics.getPaint();
@@ -230,7 +279,7 @@ public class GraphYFileExporter {
             IRenderContext paintContext = cnfg.createRenderContext(canvas);
             graphics.transform(paintContext.getToWorldTransform());
 
-            // export the canvas content
+            //export the canvas content
             canvas.exportContent(paintContext).paint(paintContext, graphics);
         } finally {
             graphics.dispose();
@@ -239,12 +288,24 @@ public class GraphYFileExporter {
         gfx.endExport();
     }    
     
+    /**
+     * Prepares emf graphic.
+     * @param os output stream
+     * @param size size of the exported graphic
+     * @return created emf graphic
+     */
     private EMFGraphics2D createEmfGraphics(FileOutputStream os, Dimension size) {
         EMFGraphics2D gfx = new EMFGraphics2D(os, size);
         gfx.setDeviceIndependent(true);
         return gfx;
     }
 
+    /**
+     * Prepares eps graphic.
+     * @param os output stream
+     * @param size size of the exported graphic
+     * @return created eps graphic
+     */
     private EPSGraphics2D createEpsGraphics(FileOutputStream os, Dimension size) {
         Properties properties = new Properties();
         properties.putAll(EPSGraphics2D.getDefaultProperties());
