@@ -1,0 +1,5 @@
+agent Server(in) = in(client).((^r)'client<r>.Pong<r,client> | Server<in>)
+agent Ping(send,rec) = 'send.Pong<rec,send>
+agent Client(in,server) = 'server<in>.in(opponent).Ping<opponent,in>
+agent Pong(rec,send) = rec.Ping<send,rec>
+agent System(serv) = Server<serv> | !(^cli)Client<cli,serv>

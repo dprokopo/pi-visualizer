@@ -1,0 +1,6 @@
+agent Bank(bank) = bank(account,bill,confirm).'confirm.Bank<bank>
+agent EShop(web,vend,bank) = web(client,order,addr).(^invoice,conf,canc)'client<bank,invoice,conf,canc>.(conf.'vend<order,addr>.EShop<web,vend,bank> + canc.EShop<web,vend,bank>)
+agent Vendor(eshop) = eshop(order,addr).(^goods)'addr<goods>.Vendor<eshop>
+agent Client(shop,id,addr) = (^ord)'shop<id,ord,addr>.id(bank,bill,confirm,cancel).((^acc)'bank<acc,bill,confirm>.addr(goods).0 + 'cancel.0)
+agent Clients(eshop) = !(^id,addr)Client<eshop,id,addr>
+agent System(web,prod,bank) = Clients<web> | EShop<web,prod,bank> | Vendor<prod> | Bank<bank>

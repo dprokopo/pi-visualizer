@@ -1,0 +1,7 @@
+agent RC(x,n,o) = 'o<x>.'n<o>.0
+agent B(i,m) = i(x).(^n)(B<i,n> | C<x,n,m>) + m(o).EB<i,o>
+agent Input(i) = (^item)'i<item>.Input<i>
+agent C(x,n,m) = m(o).RC<x,n,o>
+agent Output(o) = o(item).Output<o>
+agent EB(i,o) = i(x).(^m)(B<i,m> | RC<x,m,o>)
+agent System(in,out) = Input<in> | EB<in,out> | Output<out>

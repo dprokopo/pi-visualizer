@@ -1,0 +1,3 @@
+agent Ping(send,rec) = 'send.Pong<rec,send>
+agent Pong(rec,send) = rec.Ping<send,rec>
+agent System(a,b) = Ping<a,b> | Pong<a,b>

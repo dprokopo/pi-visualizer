@@ -1,0 +1,6 @@
+agent B(i,o) = i(x).C<x,i,o>
+agent Input(i) = (^item)'i<item>.Input<i>
+agent C(x,i,o) = 'o<x>.B<i,o>
+agent Output(o) = o(item).Output<o>
+agent UB(i,o) = i(x).(^m)(UB<i,m> | C<x,m,o>)
+agent System(in,out) = Input<in> | UB<in,out> | Output<out>
